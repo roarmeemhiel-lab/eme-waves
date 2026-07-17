@@ -1,0 +1,2132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EM Spectrum Explorer — Science 9</title>
+  <style>
+    /* ============================================================ */
+    /* CSS - Complete Styles */
+    /* ============================================================ */
+    :root{
+      --bg:#0B1220;
+      --surface:#131B2E;
+      --surface-2:#182238;
+      --surface-3:#1F2D45;
+      --line:rgba(255,255,255,0.08);
+      --text:#E8ECF4;
+      --muted:#8B97AE;
+      --accent:#4FD8E8;
+      --accent-dim: rgba(79,216,232,0.14);
+      --radio:#8B2635;
+      --micro:#C2542C;
+      --ir:#D4A017;
+      --uv:#6B3FA0;
+      --xray:#4A2574;
+      --gamma:#2D1B4E;
+      --good:#4CAF7D;
+      --bad:#E0616B;
+      --gold:#FFD700;
+      --radius:12px;
+      --shadow:0 4px 24px rgba(0,0,0,0.4);
+      --font-size-base:18px;
+      --font-size-large:22px;
+      --font-size-xl:28px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{
+      background:var(--bg);
+      color:var(--text);
+      font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+      min-height:100vh;
+      padding:12px;
+      font-size:var(--font-size-base);
+      line-height:1.6;
+    }
+    body.accessibility-mode{
+      --font-size-base:24px;
+      --font-size-large:28px;
+      --font-size-xl:34px;
+    }
+    body.accessibility-mode .card{padding:24px 28px;}
+    body.accessibility-mode .btn{padding:14px 28px;font-size:20px;}
+    body.accessibility-mode .spectrum-bar{height:100px;}
+    body.accessibility-mode .band span{font-size:14px;max-width:80px;}
+    body.accessibility-mode .msg{font-size:20px;padding:12px 18px;}
+    body.accessibility-mode .game-opt{font-size:18px;padding:14px 16px;}
+    body.accessibility-mode .question-text{font-size:22px;}
+    body.accessibility-mode .game-stat .value{font-size:24px;}
+    body.accessibility-mode .page-btn{font-size:16px;padding:16px 12px;}
+    body.accessibility-mode .page-btn .icon{font-size:24px;}
+    body.accessibility-mode .visual-item .icon{font-size:40px;}
+    body.accessibility-mode .visual-item .label{font-size:13px;}
+    body.accessibility-mode .meta-box .val{font-size:18px;}
+    body.accessibility-mode .detail-card h3{font-size:26px;}
+    body.accessibility-mode .content-card p{font-size:18px;}
+    body.accessibility-mode .content-card ul li{font-size:17px;}
+    body.accessibility-mode .chat-input-row input{font-size:18px;padding:12px 16px;}
+    body.accessibility-mode .calc-card input, body.accessibility-mode .calc-card select{font-size:18px;padding:12px 14px;}
+    body.accessibility-mode .chip{font-size:14px;padding:6px 16px;}
+    body.accessibility-mode .lb-row{font-size:16px;}
+    body.accessibility-mode .lb-row .lb-score{font-size:20px;}
+    body.accessibility-mode .game-over .big-score{font-size:64px;}
+    body.accessibility-mode .game-over .sub-text{font-size:18px;}
+    body.accessibility-mode .feedback{font-size:18px;}
+    body.accessibility-mode .explain{font-size:16px;}
+    
+    .app-container{max-width:1100px;margin:0 auto;}
+    
+    .card{
+      background:var(--surface);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:20px 24px;
+      box-shadow:var(--shadow);
+    }
+    
+    .card-title{
+      font-family:'Segoe UI',sans-serif;
+      font-weight:600;
+      font-size:var(--font-size-large);
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:var(--accent);
+      margin-bottom:14px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .card-title .badge{
+      background:var(--accent-dim);
+      color:var(--accent);
+      font-size:12px;
+      padding:2px 14px;
+      border-radius:14px;
+      font-weight:400;
+      text-transform:none;
+    }
+    
+    .header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      flex-wrap:wrap;
+      gap:12px;
+      margin-bottom:16px;
+    }
+    .header h1{font-size:var(--font-size-xl);font-weight:700;}
+    .header .subtitle{color:var(--muted);font-size:var(--font-size-base);}
+    .header-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+    .sound-toggle, .help-btn, .accessibility-toggle{
+      background:var(--surface-2);
+      border:1px solid var(--line);
+      color:var(--muted);
+      padding:6px 14px;
+      border-radius:20px;
+      font-size:14px;
+      cursor:pointer;
+      transition:all .2s;
+      font-family:inherit;
+    }
+    .sound-toggle:hover, .help-btn:hover, .accessibility-toggle:hover{border-color:var(--accent);color:var(--text);}
+    .sound-toggle.on{color:var(--good);border-color:var(--good);}
+    .sound-toggle.off{color:var(--bad);border-color:var(--bad);}
+    .accessibility-toggle.on{color:var(--gold);border-color:var(--gold);background:rgba(255,215,0,0.1);}
+    
+    .page-nav{
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr 1fr;
+      gap:8px;
+      margin-bottom:20px;
+    }
+    .page-btn{
+      padding:14px 8px;
+      border-radius:12px;
+      border:2px solid var(--line);
+      background:var(--surface);
+      color:var(--muted);
+      cursor:pointer;
+      font-size:14px;
+      font-weight:600;
+      transition:all .3s;
+      font-family:inherit;
+      text-align:center;
+      position:relative;
+    }
+    .page-btn:hover{border-color:var(--accent);color:var(--text);transform:translateY(-2px);}
+    .page-btn .step{display:block;font-size:11px;color:var(--muted);font-weight:400;}
+    .page-btn .icon{font-size:22px;display:block;margin-bottom:2px;}
+    .page-btn.active{border-color:var(--accent);color:var(--accent);background:var(--accent-dim);box-shadow:0 0 20px rgba(79,216,232,0.1);}
+    .page-btn.active .step{color:var(--accent);}
+    .page-btn .check{
+      position:absolute;top:-6px;right:-6px;background:var(--good);color:#fff;border-radius:50%;
+      width:20px;height:20px;font-size:12px;display:flex;align-items:center;justify-content:center;display:none;
+    }
+    .page-btn.done .check{display:flex;}
+    
+    .page{display:none;animation:fadeIn .4s ease;}
+    .page.active{display:block;}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+    
+    .page-nav-buttons{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-top:20px;
+      padding-top:16px;
+      border-top:1px solid var(--line);
+      flex-wrap:wrap;
+      gap:10px;
+    }
+    .page-nav-buttons .page-indicator{font-size:var(--font-size-base);color:var(--muted);}
+    .btn{
+      background:var(--accent);
+      border:none;
+      color:#04252A;
+      font-weight:700;
+      border-radius:8px;
+      padding:12px 28px;
+      cursor:pointer;
+      font-size:var(--font-size-base);
+      font-family:inherit;
+      transition:opacity .15s;
+      white-space:nowrap;
+    }
+    .btn:disabled{opacity:.4;cursor:not-allowed;}
+    .btn-secondary{background:var(--surface-2);color:var(--text);border:1px solid var(--line);}
+    .btn-secondary:hover{border-color:var(--accent);color:var(--accent);}
+    
+    .content-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+    .content-card{
+      background:var(--surface-2);
+      border-radius:12px;
+      padding:18px 20px;
+      border:1px solid var(--line);
+      transition:border-color .2s;
+    }
+    .content-card:hover{border-color:var(--accent-dim);}
+    .content-card .emoji{font-size:32px;display:block;margin-bottom:8px;}
+    .content-card h3{font-size:var(--font-size-large);margin-bottom:6px;}
+    .content-card p{font-size:var(--font-size-base);color:var(--muted);line-height:1.6;}
+    .content-card ul{padding-left:20px;margin-top:6px;}
+    .content-card ul li{font-size:var(--font-size-base);color:var(--muted);margin-bottom:4px;line-height:1.5;}
+    .content-card .highlight{color:var(--accent);font-weight:600;}
+    
+    .content-intro{
+      grid-column:1/-1;
+      text-align:center;
+      padding:24px;
+      background:var(--surface-2);
+      border-radius:14px;
+      border:1px solid var(--line);
+    }
+    .content-intro .big-icon{font-size:56px;display:block;margin-bottom:8px;}
+    .content-intro h2{font-size:var(--font-size-xl);margin-bottom:6px;}
+    .content-intro p{color:var(--muted);font-size:var(--font-size-large);max-width:600px;margin:0 auto;line-height:1.6;}
+    
+    .spectrum-bar{
+      display:flex;
+      height:72px;
+      border-radius:10px;
+      overflow:hidden;
+      border:1px solid var(--line);
+      cursor:pointer;
+      margin-bottom:10px;
+    }
+    .band{
+      position:relative;
+      display:flex;
+      align-items:flex-end;
+      justify-content:center;
+      padding:6px 4px;
+      transition:filter .2s, transform .2s;
+      border-right:1px solid rgba(0,0,0,0.2);
+      flex:1;
+      min-width:0;
+    }
+    .band:last-child{border-right:none;}
+    .band:hover{filter:brightness(1.2);transform:scaleY(1.04);}
+    .band.selected{filter:brightness(1.3);box-shadow:inset 0 0 0 2px var(--accent);z-index:2;}
+    .band span{font-size:12px;font-weight:600;color:rgba(255,255,255,0.95);text-shadow:0 1px 4px rgba(0,0,0,0.6);text-align:center;line-height:1.2;word-break:break-word;max-width:60px;}
+    .b-radio{background:var(--radio);}
+    .b-micro{background:var(--micro);}
+    .b-ir{background:var(--ir);}
+    .b-visible{background:linear-gradient(90deg,#7A1FA2,#2255C4,#1F9E63,#DCC322,#E0781F,#C2262E);}
+    .b-uv{background:var(--uv);}
+    .b-xray{background:var(--xray);}
+    .b-gamma{background:var(--gamma);}
+    .axis-row{display:flex;justify-content:space-between;margin-top:6px;font-size:11px;color:var(--muted);font-weight:500;letter-spacing:.04em;}
+    
+    .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:12px;}
+    .detail-card .swatch-row{display:flex;align-items:center;gap:14px;margin-bottom:12px;}
+    .swatch{width:36px;height:36px;border-radius:10px;flex-shrink:0;}
+    .detail-card h3{font-size:var(--font-size-xl);margin:0;}
+    .detail-card .fil{color:var(--muted);font-size:var(--font-size-base);}
+    .detail-meta{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0;}
+    .meta-box{background:var(--surface-2);border-radius:10px;padding:10px 14px;}
+    .meta-box .lbl{font-size:11px;text-transform:uppercase;color:var(--muted);letter-spacing:.06em;}
+    .meta-box .val{font-family:'Courier New',monospace;font-size:var(--font-size-large);color:var(--accent);}
+    .detail-card .desc{font-size:var(--font-size-base);line-height:1.6;color:var(--text);}
+    .detail-card .uses{font-size:var(--font-size-base);color:var(--muted);margin-top:8px;}
+    
+    .visual-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0;}
+    .visual-item{
+      background:var(--surface-2);
+      border-radius:10px;
+      padding:12px 8px;
+      text-align:center;
+      border:1px solid var(--line);
+      transition:all .2s;
+      cursor:default;
+    }
+    .visual-item:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,0.3);}
+    .visual-item .icon{font-size:36px;display:block;margin-bottom:4px;}
+    .visual-item .label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;line-height:1.3;font-weight:500;}
+    
+    .spectrum-tip{font-size:var(--font-size-base);color:var(--muted);text-align:center;margin-top:12px;padding:14px;background:var(--surface-2);border-radius:10px;border:1px solid var(--line);}
+    
+    .tutor-calc-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:16px;}
+    .tutor-wrap{display:flex;flex-direction:column;height:450px;}
+    .chat-log{
+      flex:1;
+      overflow-y:auto;
+      padding:14px 16px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      background:var(--surface-2);
+      border-radius:12px;
+      min-height:280px;
+      max-height:320px;
+    }
+    .msg{max-width:85%;padding:12px 18px;border-radius:14px;font-size:var(--font-size-base);line-height:1.6;white-space:pre-wrap;}
+    .msg.user{align-self:flex-end;background:var(--accent-dim);border:1px solid rgba(79,216,232,0.2);}
+    .msg.ai{align-self:flex-start;background:var(--surface);border:1px solid var(--line);}
+    .msg.system{color:var(--muted);font-size:var(--font-size-base);font-style:italic;text-align:center;align-self:center;background:none;border:none;max-width:90%;}
+    .chat-input-row{display:flex;gap:8px;padding-top:12px;}
+    .chat-input-row input{flex:1;background:var(--surface-2);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:10px 14px;font-size:var(--font-size-base);}
+    .typing{color:var(--muted);font-size:var(--font-size-base);font-style:italic;padding:6px 0 0 6px;}
+    .quick-chips{display:flex;gap:6px;flex-wrap:wrap;padding-top:10px;}
+    .chip{background:var(--surface-2);border:1px solid var(--line);color:var(--muted);padding:6px 16px;border-radius:16px;font-size:13px;cursor:pointer;transition:border-color .15s;font-family:inherit;}
+    .chip:hover{border-color:var(--accent);color:var(--accent);}
+    
+    .calc-card .calc-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+    .calc-card input,.calc-card select{
+      background:var(--surface-2);
+      border:1px solid var(--line);
+      color:var(--text);
+      border-radius:10px;
+      padding:10px 14px;
+      font-size:var(--font-size-base);
+      font-family:'Courier New',monospace;
+    }
+    .calc-card input{width:140px;flex:1;}
+    .calc-result{margin-top:14px;font-family:'Courier New',monospace;font-size:var(--font-size-base);padding:14px;background:var(--surface-2);border-radius:10px;min-height:24px;line-height:1.6;}
+    .calc-result .tag{color:var(--accent);font-weight:600;}
+    
+    .games-grid{display:grid;grid-template-columns:1fr 1.2fr;gap:16px;}
+    .game-mode-selector{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+    .mode-btn{
+      padding:10px 16px;
+      border-radius:12px;
+      border:2px solid var(--line);
+      background:var(--surface);
+      color:var(--muted);
+      cursor:pointer;
+      font-size:14px;
+      font-weight:600;
+      transition:all .2s;
+      font-family:inherit;
+      flex:1;
+      min-width:80px;
+      text-align:center;
+    }
+    .mode-btn:hover{border-color:var(--accent);color:var(--text);}
+    .mode-btn.active-solo{border-color:var(--accent);color:var(--accent);background:var(--accent-dim);}
+    .mode-btn.active-group{border-color:var(--gold);color:var(--gold);background:rgba(255,215,0,0.1);}
+    .mode-btn.active-teacher{border-color:var(--bad);color:var(--bad);background:rgba(224,97,107,0.1);}
+    
+    .diff-selector{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+    .diff-btn{
+      padding:8px 16px;
+      border-radius:24px;
+      border:2px solid var(--line);
+      background:var(--surface);
+      color:var(--muted);
+      cursor:pointer;
+      font-size:14px;
+      font-weight:600;
+      transition:all .2s;
+      font-family:inherit;
+    }
+    .diff-btn:hover{border-color:var(--accent);color:var(--text);}
+    .diff-btn.active-easy{border-color:var(--good);color:var(--good);background:rgba(76,175,125,0.1);}
+    .diff-btn.active-medium{border-color:var(--gold);color:var(--gold);background:rgba(255,215,0,0.1);}
+    .diff-btn.active-hard{border-color:var(--bad);color:var(--bad);background:rgba(224,97,107,0.1);}
+    .diff-btn.active-accessibility{border-color:#9C27B0;color:#9C27B0;background:rgba(156,39,176,0.1);}
+    
+    .game-container{background:var(--surface-2);border-radius:12px;padding:16px;min-height:320px;max-height:550px;overflow-y:auto;}
+    .game-container::-webkit-scrollbar{width:4px;}
+    .game-container::-webkit-scrollbar-thumb{background:var(--surface-3);border-radius:4px;}
+    
+    .name-input-area{
+      background:var(--surface);
+      border-radius:12px;
+      padding:12px 16px;
+      border:1px solid var(--line);
+      margin-bottom:14px;
+      display:flex;
+      gap:12px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .name-input-area label{font-size:var(--font-size-base);font-weight:600;color:var(--muted);}
+    .name-input-area input{flex:1;min-width:140px;background:var(--surface-2);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:8px 12px;font-size:var(--font-size-base);}
+    .name-input-area .name-status{font-size:var(--font-size-base);color:var(--good);}
+    .refresh-btn{background:var(--surface-2);border:1px solid var(--line);color:var(--muted);padding:6px 12px;border-radius:14px;font-size:14px;cursor:pointer;transition:all .2s;font-family:inherit;}
+    .refresh-btn:hover{border-color:var(--accent);color:var(--text);}
+    
+    .leaderboard{background:var(--surface);border-radius:12px;padding:12px 14px;border:1px solid var(--line);max-height:280px;overflow-y:auto;}
+    .leaderboard::-webkit-scrollbar{width:4px;}
+    .leaderboard::-webkit-scrollbar-thumb{background:var(--surface-3);border-radius:4px;}
+    .leaderboard .lb-header{display:grid;grid-template-columns:0.5fr 2fr 1fr 0.8fr 1.2fr;gap:8px;padding:8px 10px;border-bottom:2px solid var(--line);font-size:12px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.06em;}
+    .leaderboard .lb-row{display:grid;grid-template-columns:0.5fr 2fr 1fr 0.8fr 1.2fr;gap:8px;padding:6px 10px;border-bottom:1px solid var(--line);font-size:var(--font-size-base);align-items:center;transition:background .2s;}
+    .leaderboard .lb-row:hover{background:var(--surface-2);}
+    .leaderboard .lb-row .rank{font-weight:700;font-size:16px;}
+    .leaderboard .lb-row .rank.gold{color:var(--gold);}
+    .leaderboard .lb-row .rank.silver{color:#C0C0C0;}
+    .leaderboard .lb-row .rank.bronze{color:#CD7F32;}
+    .leaderboard .lb-row .lb-score{font-weight:700;color:var(--gold);font-family:'Courier New',monospace;font-size:var(--font-size-large);}
+    .leaderboard .lb-row .lb-detail{font-size:13px;color:var(--muted);}
+    .leaderboard .lb-row .lb-date{font-size:12px;color:var(--muted);}
+    .leaderboard .lb-row.you{background:var(--accent-dim);border-left:3px solid var(--accent);}
+    .leaderboard .empty-leaderboard{padding:24px;text-align:center;color:var(--muted);font-size:var(--font-size-base);}
+    
+    .lb-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
+    .lb-stat{background:var(--surface-2);border-radius:10px;padding:8px 12px;text-align:center;border:1px solid var(--line);}
+    .lb-stat .num{font-size:var(--font-size-xl);font-weight:700;font-family:'Courier New',monospace;color:var(--gold);}
+    .lb-stat .lbl{font-size:11px;text-transform:uppercase;color:var(--muted);letter-spacing:.06em;}
+    
+    .lb-pagination{display:flex;gap:4px;justify-content:center;align-items:center;padding-top:10px;border-top:1px solid var(--line);flex-wrap:wrap;}
+    .lb-pagination button{padding:4px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--muted);cursor:pointer;font-size:13px;font-weight:600;transition:all .2s;font-family:inherit;}
+    .lb-pagination button:hover:not(:disabled){border-color:var(--accent);color:var(--text);}
+    .lb-pagination button.active-page{border-color:var(--accent);color:var(--accent);background:var(--accent-dim);}
+    .lb-pagination button:disabled{opacity:.3;cursor:not-allowed;}
+    .lb-pagination .page-info{font-size:13px;color:var(--muted);padding:0 8px;}
+    
+    .game-header{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
+    .game-stat{background:var(--surface);border-radius:10px;padding:8px 10px;text-align:center;border:1px solid var(--line);}
+    .game-stat .label{font-size:11px;text-transform:uppercase;color:var(--muted);letter-spacing:.06em;}
+    .game-stat .value{font-size:var(--font-size-large);font-weight:700;font-family:'Courier New',monospace;}
+    .stat-score .value{color:var(--gold);}
+    .stat-streak .value{color:var(--accent);}
+    .stat-timer .value{color:var(--good);}
+    .stat-question .value{color:var(--muted);font-size:var(--font-size-base);}
+    
+    .progress-wrap{width:100%;height:6px;background:var(--surface);border-radius:4px;overflow:hidden;margin-bottom:12px;}
+    .progress-bar{height:100%;border-radius:4px;transition:width .5s ease;width:0%;}
+    .progress-easy{background:linear-gradient(90deg,var(--good),#66BB6A);}
+    .progress-medium{background:linear-gradient(90deg,var(--gold),#FFC107);}
+    .progress-hard{background:linear-gradient(90deg,var(--bad),#EF5350);}
+    .progress-accessibility{background:linear-gradient(90deg,#9C27B0,#E040FB);}
+    
+    .question-card{background:var(--surface);border-radius:12px;padding:14px 16px;border:1px solid var(--line);margin-bottom:12px;}
+    .question-number{font-size:13px;color:var(--muted);margin-bottom:6px;font-weight:500;}
+    .question-text{font-size:var(--font-size-large);font-weight:600;line-height:1.5;}
+    
+    .options-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+    @media (max-width:600px){.options-grid{grid-template-columns:1fr;}}
+    .game-opt{
+      background:var(--surface);
+      border:2px solid var(--line);
+      border-radius:10px;
+      padding:10px 14px;
+      cursor:pointer;
+      font-size:var(--font-size-base);
+      transition:all .2s;
+      text-align:left;
+      font-family:inherit;
+      color:var(--text);
+      line-height:1.5;
+    }
+    .game-opt:hover:not(.disabled){border-color:var(--accent);transform:scale(1.02);}
+    .game-opt.selected{border-color:var(--accent);background:var(--accent-dim);}
+    .game-opt.correct{border-color:var(--good);background:rgba(76,175,125,0.2);}
+    .game-opt.wrong{border-color:var(--bad);background:rgba(224,97,107,0.2);}
+    .game-opt .opt-label{font-weight:600;color:var(--muted);margin-right:8px;}
+    .game-opt.disabled{cursor:default;opacity:.7;}
+    .game-opt.disabled:hover{transform:none;border-color:var(--line);}
+    
+    .feedback{padding:12px 16px;border-radius:10px;margin-bottom:12px;font-size:var(--font-size-base);display:none;line-height:1.6;}
+    .feedback.show{display:block;}
+    .feedback.correct{background:rgba(76,175,125,0.15);border:1px solid var(--good);color:var(--good);}
+    .feedback.wrong{background:rgba(224,97,107,0.15);border:1px solid var(--bad);color:var(--bad);}
+    .feedback .explanation{color:var(--muted);font-weight:400;margin-top:6px;}
+    
+    .game-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;}
+    
+    .game-over{text-align:center;padding:24px 0;}
+    .game-over .big-score{font-size:56px;font-weight:700;color:var(--gold);}
+    .game-over .stars{font-size:36px;margin:10px 0;}
+    .game-over .sub-text{color:var(--muted);font-size:var(--font-size-base);}
+    .game-over .stat-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px;max-width:500px;margin:14px auto;}
+    .game-over .stat-item{background:var(--surface);padding:12px;border-radius:10px;border:1px solid var(--line);}
+    .game-over .stat-item .num{font-size:var(--font-size-xl);font-weight:700;}
+    .game-over .stat-item .lbl{font-size:12px;color:var(--muted);text-transform:uppercase;}
+    
+    .empty-state{color:var(--muted);font-size:var(--font-size-base);text-align:center;padding:40px 20px;}
+    .quiz-toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;align-items:center;justify-content:space-between;}
+    
+    .diff-indicator{font-size:14px;padding:4px 12px;border-radius:14px;font-weight:600;display:inline-block;}
+    .diff-indicator.easy{background:rgba(76,175,125,0.15);color:var(--good);}
+    .diff-indicator.medium{background:rgba(255,215,0,0.15);color:var(--gold);}
+    .diff-indicator.hard{background:rgba(224,97,107,0.15);color:var(--bad);}
+    .diff-indicator.accessibility{background:rgba(156,39,176,0.15);color:#9C27B0;}
+    
+    .team-setup{background:var(--surface);border-radius:12px;padding:14px;border:1px solid var(--line);margin-bottom:14px;}
+    .team-setup .team-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:8px;}
+    .team-setup input{background:var(--surface-2);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:8px 12px;font-size:var(--font-size-base);flex:1;min-width:100px;}
+    .team-setup .team-badge{display:inline-block;width:14px;height:14px;border-radius:50%;margin-right:6px;}
+    
+    .team-scoreboard{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:12px;}
+    .team-score{background:var(--surface);border-radius:10px;padding:8px 12px;text-align:center;border:2px solid var(--line);transition:all .3s;}
+    .team-score.active-team{border-color:var(--gold);box-shadow:0 0 20px rgba(255,215,0,0.1);}
+    .team-score .team-name{font-size:14px;font-weight:600;}
+    .team-score .team-pts{font-size:var(--font-size-xl);font-weight:700;font-family:'Courier New',monospace;}
+    .team-score .team-correct{font-size:12px;color:var(--muted);}
+    .team-score .team-badge-sm{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:4px;}
+    
+    .student-dashboard{background:var(--surface);border-radius:12px;padding:12px;border:1px solid var(--line);margin-bottom:12px;}
+    .student-dashboard .dashboard-header{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr 1.5fr;gap:6px;padding:6px 10px;border-bottom:2px solid var(--line);font-size:11px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.06em;}
+    .student-dashboard .student-row{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr 1.5fr;gap:6px;padding:6px 10px;border-bottom:1px solid var(--line);align-items:center;font-size:var(--font-size-base);transition:background .3s;cursor:pointer;}
+    .student-dashboard .student-row:hover{background:var(--surface-2);}
+    .student-dashboard .student-row.active{background:var(--accent-dim);border-left:3px solid var(--accent);}
+    .student-dashboard .student-row .name{font-weight:500;display:flex;align-items:center;gap:8px;}
+    .student-dashboard .student-row .name .badge-color{width:12px;height:12px;border-radius:50%;display:inline-block;flex-shrink:0;}
+    .student-dashboard .student-row .score{font-weight:700;font-family:'Courier New',monospace;font-size:var(--font-size-large);}
+    .student-dashboard .student-row .score.high{color:var(--gold);}
+    .student-dashboard .student-row .score.medium{color:var(--accent);}
+    .student-dashboard .student-row .score.low{color:var(--muted);}
+    .student-dashboard .student-row .correct{font-size:13px;color:var(--muted);}
+    .student-dashboard .student-row .status{font-size:12px;padding:2px 10px;border-radius:12px;text-align:center;font-weight:600;}
+    .student-dashboard .student-row .status.active{background:rgba(76,175,125,0.2);color:var(--good);}
+    .student-dashboard .student-row .status.waiting{background:rgba(255,215,0,0.15);color:var(--gold);}
+    .student-dashboard .student-row .status.done{background:rgba(139,151,174,0.15);color:var(--muted);}
+    .student-dashboard .student-row .status.current{background:rgba(79,216,232,0.25);color:var(--accent);animation:pulse-glow 1s ease-in-out infinite;}
+    @keyframes pulse-glow{0%,100%{opacity:1;}50%{opacity:0.6;}}
+    .student-dashboard .student-controls{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;padding-top:8px;border-top:1px solid var(--line);}
+    .student-dashboard .student-controls button{padding:4px 14px;border-radius:12px;border:2px solid var(--line);background:var(--surface);color:var(--muted);cursor:pointer;font-size:12px;font-weight:600;transition:all .2s;font-family:inherit;}
+    .student-dashboard .student-controls button:hover{border-color:var(--accent);color:var(--text);}
+    .student-dashboard .student-controls button.active-student{border-color:var(--gold);color:var(--gold);background:rgba(255,215,0,0.1);}
+    
+    .team-selector{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+    .team-selector .ts-label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;}
+    .team-selector button{padding:4px 12px;border-radius:12px;border:2px solid var(--line);background:var(--surface);color:var(--muted);cursor:pointer;font-size:12px;font-weight:600;transition:all .2s;font-family:inherit;}
+    .team-selector button:hover{border-color:var(--accent);}
+    .team-selector button.active-team-btn{border-color:var(--gold);color:var(--gold);background:rgba(255,215,0,0.1);}
+    
+    .timer-warning .value{color:var(--bad);animation:pulse .5s ease-in-out 3;}
+    @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+    
+    .loading-spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--accent-dim);border-top-color:var(--accent);border-radius:50%;animation:spin .5s linear infinite;margin-right:8px;vertical-align:middle;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    
+    ::-webkit-scrollbar{width:5px;height:5px;}
+    ::-webkit-scrollbar-track{background:var(--surface);border-radius:4px;}
+    ::-webkit-scrollbar-thumb{background:var(--surface-3);border-radius:4px;}
+    ::-webkit-scrollbar-thumb:hover{background:var(--accent-dim);}
+    
+    .tutorial-overlay{
+      position:fixed;
+      top:0;left:0;
+      width:100%;height:100%;
+      background:rgba(0,0,0,0.85);
+      z-index:9999;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      padding:20px;
+      backdrop-filter:blur(4px);
+    }
+    .tutorial-overlay .tutorial-box{
+      background:var(--surface);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:32px 36px;
+      max-width:650px;
+      width:100%;
+      max-height:90vh;
+      overflow-y:auto;
+      box-shadow:0 20px 60px rgba(0,0,0,0.8);
+    }
+    .tutorial-overlay .tutorial-box::-webkit-scrollbar{width:4px;}
+    .tutorial-overlay .tutorial-box::-webkit-scrollbar-thumb{background:var(--surface-3);border-radius:4px;}
+    .tutorial-overlay .tut-title{font-size:var(--font-size-xl);font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:10px;}
+    .tutorial-overlay .tut-subtitle{color:var(--muted);font-size:var(--font-size-base);margin-bottom:18px;border-bottom:1px solid var(--line);padding-bottom:14px;}
+    .tutorial-overlay .tut-section{margin-bottom:16px;}
+    .tutorial-overlay .tut-section h4{color:var(--accent);font-size:var(--font-size-large);margin-bottom:6px;display:flex;align-items:center;gap:8px;}
+    .tutorial-overlay .tut-section p,.tutorial-overlay .tut-section li{font-size:var(--font-size-base);line-height:1.6;color:var(--text);}
+    .tutorial-overlay .tut-section ul{padding-left:20px;margin:6px 0;}
+    .tutorial-overlay .tut-section ul li{font-size:var(--font-size-base);color:var(--muted);margin-bottom:4px;}
+    .tutorial-overlay .tut-section .highlight{color:var(--accent);font-weight:600;}
+    .tutorial-overlay .tut-buttons{display:flex;gap:12px;margin-top:20px;border-top:1px solid var(--line);padding-top:18px;flex-wrap:wrap;}
+    .tutorial-overlay .tut-buttons .btn{flex:1;min-width:120px;text-align:center;font-size:var(--font-size-base);}
+    .tutorial-overlay .tut-buttons .btn-secondary{background:var(--surface-2);color:var(--muted);border:1px solid var(--line);}
+    .tutorial-overlay .tut-buttons .btn-secondary:hover{border-color:var(--accent);color:var(--text);}
+    
+    .flex-between{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
+    
+    @media (max-width:900px){
+      .content-grid{grid-template-columns:1fr;}
+      .detail-grid{grid-template-columns:1fr;}
+      .tutor-calc-grid{grid-template-columns:1fr;}
+      .games-grid{grid-template-columns:1fr;}
+      .page-nav{grid-template-columns:1fr 1fr;}
+      .game-header{grid-template-columns:1fr 1fr;}
+      .game-over .stat-grid{grid-template-columns:1fr 1fr;}
+      .visual-grid{grid-template-columns:1fr 1fr;}
+      .leaderboard .lb-header,.leaderboard .lb-row{grid-template-columns:0.5fr 1.5fr 0.8fr 0.8fr 1.2fr;font-size:13px;gap:4px;}
+      .lb-stats{grid-template-columns:1fr 1fr;}
+      .student-dashboard .dashboard-header,.student-dashboard .student-row{grid-template-columns:0.5fr 1.2fr 0.8fr 0.8fr 1fr;font-size:13px;gap:4px;}
+      .tutorial-overlay .tutorial-box{padding:24px;}
+    }
+    @media (max-width:480px){
+      body{padding:6px;--font-size-base:16px;--font-size-large:18px;--font-size-xl:22px;}
+      .card{padding:14px;}
+      .spectrum-bar{height:54px;}
+      .band span{font-size:10px;max-width:40px;}
+      .detail-meta{grid-template-columns:1fr;}
+      .calc-card .calc-row input{width:100%;}
+      .msg{max-width:95%;}
+      .game-over .stat-grid{grid-template-columns:1fr;}
+      .visual-grid{grid-template-columns:1fr 1fr;}
+      .visual-item .icon{font-size:28px;}
+      .leaderboard .lb-header,.leaderboard .lb-row{grid-template-columns:0.5fr 1.2fr 0.8fr 0.8fr 1fr;font-size:11px;gap:3px;}
+      .name-input-area{flex-direction:column;align-items:stretch;}
+      .lb-stats{grid-template-columns:1fr;}
+      .student-dashboard .dashboard-header,.student-dashboard .student-row{grid-template-columns:0.5fr 1fr 0.8fr 0.8fr 1fr;font-size:11px;gap:3px;}
+      .page-nav{grid-template-columns:1fr 1fr;}
+      .page-btn{padding:10px 4px;font-size:12px;}
+      .page-btn .icon{font-size:18px;}
+      .tutorial-overlay .tutorial-box{padding:16px;margin:10px;}
+      .tutorial-overlay .tut-title{font-size:var(--font-size-xl);}
+      body.accessibility-mode{--font-size-base:18px;--font-size-large:20px;--font-size-xl:24px;}
+      body.accessibility-mode .spectrum-bar{height:70px;}
+      body.accessibility-mode .band span{font-size:12px;}
+    }
+  </style>
+</head>
+<body>
+<div class="app-container">
+
+  <!-- ===== HEADER ===== -->
+  <header class="header">
+    <div>
+      <h1>🌐 EM Spectrum Explorer</h1>
+      <div class="subtitle">Science 9 · Grade 9 · Compare wavelengths &amp; frequencies of EM waves</div>
+    </div>
+    <div class="header-actions">
+      <button class="accessibility-toggle" id="accessibilityToggle" onclick="toggleAccessibility()">♿ Accessible</button>
+      <button class="help-btn" onclick="showTutorial()">❓ Help</button>
+      <button class="sound-toggle on" id="soundToggle" onclick="toggleSound()">🔊 Sound</button>
+    </div>
+  </header>
+
+  <!-- ===== PAGE NAVIGATION ===== -->
+  <nav class="page-nav">
+    <button class="page-btn active" data-page="0" onclick="goToPage(0)">
+      <span class="icon">📚</span> Content <span class="step">Step 1</span><span class="check">✓</span>
+    </button>
+    <button class="page-btn" data-page="1" onclick="goToPage(1)">
+      <span class="icon">📡</span> Spectrum <span class="step">Step 2</span><span class="check">✓</span>
+    </button>
+    <button class="page-btn" data-page="2" onclick="goToPage(2)">
+      <span class="icon">🤖</span> AI Tutor <span class="step">Step 3</span><span class="check">✓</span>
+    </button>
+    <button class="page-btn" data-page="3" onclick="goToPage(3)">
+      <span class="icon">🎮</span> Games <span class="step">Step 4</span><span class="check">✓</span>
+    </button>
+  </nav>
+
+  <!-- ========================================================= -->
+  <!-- PAGE 1: CONTENT -->
+  <!-- ========================================================= -->
+  <div class="page active" data-page="0">
+    <div class="card">
+      <div class="card-title">📚 Learn About the Electromagnetic Spectrum</div>
+      
+      <div class="content-intro">
+        <span class="big-icon">🌊</span>
+        <h2>What is the Electromagnetic Spectrum?</h2>
+        <p>The electromagnetic (EM) spectrum is the entire range of all types of electromagnetic radiation — from radio waves (longest wavelength) to gamma rays (shortest wavelength).</p>
+      </div>
+
+      <div class="content-grid">
+        <div class="content-card">
+          <span class="emoji">📏</span>
+          <h3>Wavelength &amp; Frequency</h3>
+          <p>Wavelength (λ) is the distance between wave peaks. Frequency (f) is the number of waves per second.</p>
+          <ul>
+            <li>Radio waves: <span class="highlight">longest</span> wavelength, <span class="highlight">lowest</span> frequency</li>
+            <li>Gamma rays: <span class="highlight">shortest</span> wavelength, <span class="highlight">highest</span> frequency</li>
+            <li>They are <span class="highlight">inversely proportional</span>: λ × f = c</li>
+          </ul>
+        </div>
+
+        <div class="content-card">
+          <span class="emoji">⚡</span>
+          <h3>Energy &amp; Speed</h3>
+          <p>Energy increases with frequency. All EM waves travel at the same speed in a vacuum.</p>
+          <ul>
+            <li>Speed of light: <span class="highlight">c = 3 × 10⁸ m/s</span></li>
+            <li>Higher frequency = <span class="highlight">higher energy</span></li>
+            <li>Radio waves have the <span class="highlight">lowest</span> energy</li>
+            <li>Gamma rays have the <span class="highlight">highest</span> energy</li>
+          </ul>
+        </div>
+
+        <div class="content-card">
+          <span class="emoji">📋</span>
+          <h3>The 7 Types of EM Waves</h3>
+          <ul>
+            <li><span class="highlight">Radio Waves</span> — AM/FM radio, TV, cellphones</li>
+            <li><span class="highlight">Microwaves</span> — Ovens, WiFi, radar</li>
+            <li><span class="highlight">Infrared</span> — Remote controls, thermal cameras</li>
+            <li><span class="highlight">Visible Light</span> — The only part we can see!</li>
+            <li><span class="highlight">Ultraviolet</span> — Sunburn, sterilization</li>
+            <li><span class="highlight">X-rays</span> — Medical imaging, security</li>
+            <li><span class="highlight">Gamma Rays</span> — Cancer treatment, nuclear</li>
+          </ul>
+        </div>
+
+        <div class="content-card">
+          <span class="emoji">🔑</span>
+          <h3>Key Concepts</h3>
+          <ul>
+            <li>All EM waves are <span class="highlight">transverse waves</span></li>
+            <li>They don't need a medium to travel</li>
+            <li>Order from longest λ → shortest λ:</li>
+            <li style="font-size:var(--font-size-large);color:var(--accent);font-weight:600;margin-top:6px;">
+              Radio → Micro → IR → Visible → UV → X-ray → Gamma
+            </li>
+            <li style="margin-top:6px;">🎯 <span class="highlight">Remember:</span> "Raging Martians Invaded Venus Using X-ray Guns"</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="page-nav-buttons">
+        <span class="page-indicator">Page 1 of 4</span>
+        <button class="btn" onclick="goToPage(1)">Next →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- PAGE 2: SPECTRUM EXPLORER -->
+  <!-- ========================================================= -->
+  <div class="page" data-page="1">
+    <div class="card">
+      <div class="card-title">📡 Explore the Spectrum <span class="badge">click a band</span></div>
+      
+      <div class="spectrum-bar" id="spectrumBar"></div>
+      <div class="axis-row">
+        <span>← Longer λ · Lower f</span>
+        <span>Shorter λ · Higher f →</span>
+      </div>
+
+      <div class="detail-grid">
+        <div class="detail-card" id="detailCard">
+          <div class="swatch-row">
+            <div class="swatch" id="detailSwatch" style="background:var(--accent);"></div>
+            <div>
+              <h3 id="detailName">Visible Light</h3>
+              <div class="fil" id="detailFil">Visible Light</div>
+            </div>
+          </div>
+          <div class="detail-meta">
+            <div class="meta-box"><div class="lbl">Wavelength</div><div class="val" id="detailWl">400 nm – 700 nm</div></div>
+            <div class="meta-box"><div class="lbl">Frequency</div><div class="val" id="detailFreq">430 THz – 750 THz</div></div>
+          </div>
+          <div class="desc" id="detailDesc">The only part of the spectrum visible to the human eye — ROYGBIV.</div>
+          <div class="visual-grid" id="visualGrid"></div>
+          <div class="uses" id="detailUses"><strong>Uses:</strong> Photography, fiber optics, and natural vision.</div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div style="background:var(--surface-2);border-radius:12px;padding:16px;border:1px solid var(--line);">
+            <div style="font-size:13px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">💡 Did You Know?</div>
+            <div id="didYouKnow" style="font-size:var(--font-size-large);line-height:1.6;">
+              🌈 Visible light is the only part of the EM spectrum that human eyes can detect!
+            </div>
+          </div>
+          <div style="background:var(--surface-2);border-radius:12px;padding:16px;border:1px solid var(--line);">
+            <div style="font-size:13px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">📊 Quick Comparison</div>
+            <div style="font-size:var(--font-size-base);line-height:2;">
+              <span style="color:var(--radio);">● Radio</span>
+              <span style="color:var(--micro);">● Micro</span>
+              <span style="color:var(--ir);">● IR</span>
+              <span style="color:#3B6EA5;">● Visible</span>
+              <span style="color:var(--uv);">● UV</span>
+              <span style="color:var(--xray);">● X-ray</span>
+              <span style="color:var(--gamma);">● Gamma</span>
+              <br>
+              <span style="color:var(--muted);font-size:12px;">← Lower frequency · Higher frequency →</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="spectrum-tip">
+        💡 <strong>Tip:</strong> Click on any colored band above to learn more about that type of wave!
+      </div>
+
+      <div class="page-nav-buttons">
+        <button class="btn btn-secondary" onclick="goToPage(0)">← Back</button>
+        <span class="page-indicator">Page 2 of 4</span>
+        <button class="btn" onclick="goToPage(2)">Next →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- PAGE 3: AI TUTOR & CALCULATOR -->
+  <!-- ========================================================= -->
+  <div class="page" data-page="2">
+    <div class="card">
+      <div class="card-title">🤖 AI Tutor <span class="badge">Ask any question</span></div>
+      
+      <div class="tutor-calc-grid">
+        <div class="tutor-wrap">
+          <div class="chat-log" id="chatLog">
+            <div class="msg system">💡 Ask about the EM spectrum — wavelength, frequency, uses. Example: "What are gamma rays?"</div>
+          </div>
+          <div class="typing" id="typingIndicator" style="display:none;">🤔 AI Tutor is thinking...</div>
+          <div class="chat-input-row">
+            <input type="text" id="chatInput" placeholder="Ask about EM waves...">
+            <button class="btn" id="sendBtn" style="padding:10px 16px;font-size:var(--font-size-base);">Send</button>
+          </div>
+          <div class="quick-chips">
+            <button class="chip" data-question="What are radio waves?">📻 Radio</button>
+            <button class="chip" data-question="What are gamma rays?">☢️ Gamma</button>
+            <button class="chip" data-question="Compare infrared and ultraviolet">🌡️ Compare</button>
+            <button class="chip" data-question="What is frequency?">⚡ Frequency</button>
+            <button class="chip" data-question="What are the uses of EM waves?">🔧 Uses</button>
+            <button class="chip" data-question="Explain simply">📖 Easy</button>
+          </div>
+        </div>
+
+        <div class="calc-card" style="display:flex;flex-direction:column;gap:12px;">
+          <div style="font-size:var(--font-size-large);font-weight:600;color:var(--accent);">🧮 Wavelength ↔ Frequency</div>
+          <p style="font-size:var(--font-size-base);color:var(--muted);margin-bottom:4px;">Enter wavelength to find frequency and EM band</p>
+          <div class="calc-row">
+            <input type="number" id="wlInput" placeholder="Wavelength" value="500">
+            <select id="wlUnit">
+              <option value="1">m</option>
+              <option value="0.01">cm</option>
+              <option value="0.001">mm</option>
+              <option value="1e-9" selected>nm</option>
+              <option value="1e-12">pm</option>
+            </select>
+            <button class="btn" id="calcBtn" style="padding:10px 16px;font-size:var(--font-size-base);">Calculate</button>
+          </div>
+          <div class="calc-result" id="calcResult">Enter a wavelength above...</div>
+          
+          <div style="margin-top:auto;background:var(--surface-2);border-radius:10px;padding:14px;border:1px solid var(--line);">
+            <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">Formula</div>
+            <div style="font-family:'Courier New',monospace;font-size:var(--font-size-xl);color:var(--accent);">c = λ × f</div>
+            <div style="font-size:var(--font-size-base);color:var(--muted);">where c = 3 × 10⁸ m/s</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-nav-buttons">
+        <button class="btn btn-secondary" onclick="goToPage(1)">← Back</button>
+        <span class="page-indicator">Page 3 of 4</span>
+        <button class="btn" onclick="goToPage(3)">Next →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- PAGE 4: GAMES -->
+  <!-- ========================================================= -->
+  <div class="page" data-page="3">
+    <div class="card">
+      <div class="card-title">🎮 Games <span class="badge">Test your knowledge!</span></div>
+      
+      <div class="games-grid">
+        <div>
+          <div style="font-size:var(--font-size-large);font-weight:600;color:var(--accent);margin-bottom:12px;">🎯 Quiz Settings</div>
+          
+          <div class="game-mode-selector">
+            <button class="mode-btn active-solo" data-mode="solo" onclick="selectGameMode('solo')">🎯 Solo</button>
+            <button class="mode-btn" data-mode="group" onclick="selectGameMode('group')">👥 Group</button>
+            <button class="mode-btn" data-mode="teacher" onclick="selectGameMode('teacher')">👨‍🏫 Teacher</button>
+          </div>
+          
+          <div class="diff-selector">
+            <button class="diff-btn active-easy" data-diff="easy" onclick="selectDifficulty('easy')">
+              🌱 Easy <span style="font-size:12px;color:var(--good);">(1×)</span>
+            </button>
+            <button class="diff-btn" data-diff="medium" onclick="selectDifficulty('medium')">
+              ⚡ Medium <span style="font-size:12px;color:var(--gold);">(1.5×)</span>
+            </button>
+            <button class="diff-btn" data-diff="hard" onclick="selectDifficulty('hard')">
+              🔥 Hard <span style="font-size:12px;color:var(--bad);">(2×)</span>
+            </button>
+            <button class="diff-btn" data-diff="accessibility" onclick="selectDifficulty('accessibility')">
+              🤗 Easy Read <span style="font-size:12px;color:#9C27B0;">(1.2×)</span>
+            </button>
+          </div>
+          
+          <div class="quiz-toolbar">
+            <span style="font-size:var(--font-size-base);color:var(--muted);" id="gameStatus">Click "New Game" to start</span>
+            <button class="btn" id="genQuizBtn" style="padding:10px 20px;font-size:var(--font-size-base);">🔄 New Game</button>
+          </div>
+          
+          <div id="soloModeContent">
+            <div class="name-input-area">
+              <label>👤 Name:</label>
+              <input type="text" id="studentNameInput" placeholder="Enter your name..." onchange="updateStudentNameInput(this.value)">
+              <span class="name-status" id="nameStatus">⚠️ Enter name</span>
+              <button class="btn-secondary" onclick="setStudentName()" style="padding:6px 14px;font-size:var(--font-size-base);border-radius:8px;border:1px solid var(--line);background:var(--surface-2);color:var(--text);cursor:pointer;">Set</button>
+              <button class="refresh-btn" onclick="loadLeaderboard(currentPage)">🔄</button>
+            </div>
+            
+            <div class="lb-stats">
+              <div class="lb-stat"><div class="num" id="lbTotalStudents">0</div><div class="lbl">Students</div></div>
+              <div class="lb-stat"><div class="num" id="lbDisplayed">0</div><div class="lbl">Displayed</div></div>
+              <div class="lb-stat"><div class="num" id="lbMaxDisplayed">60</div><div class="lbl">Max</div></div>
+            </div>
+            <div class="leaderboard" id="leaderboardContainer">
+              <div class="empty-leaderboard">📊 Loading leaderboard...</div>
+            </div>
+            <div style="font-size:13px;color:var(--muted);text-align:center;margin-top:6px;">Top 60 students by best score</div>
+          </div>
+        </div>
+
+        <div>
+          <div style="font-size:var(--font-size-large);font-weight:600;color:var(--accent);margin-bottom:12px;">🎯 Game Area</div>
+          <div class="game-container" id="gameContainer">
+            <div class="empty-state">🎮 Select settings above, then click "New Game" to start!</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-nav-buttons">
+        <button class="btn btn-secondary" onclick="goToPage(2)">← Back</button>
+        <span class="page-indicator">Page 4 of 4</span>
+        <button class="btn btn-secondary" onclick="goToPage(0)">🏠 Home</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- TUTORIAL OVERLAY -->
+<!-- ============================================================ -->
+<div class="tutorial-overlay" id="tutorialOverlay">
+  <div class="tutorial-box">
+    <div class="tut-title">🚀 Welcome to EM Spectrum Explorer!</div>
+    <div class="tut-subtitle">Science 9 · Grade 9 · 4 Easy Steps</div>
+
+    <div class="tut-section">
+      <h4>📚 Step 1: Learn the Content</h4>
+      <p>Read about the EM spectrum — wavelength, frequency, energy, and the 7 types of waves.</p>
+    </div>
+
+    <div class="tut-section">
+      <h4>📡 Step 2: Explore the Spectrum</h4>
+      <p>Click on each colored band to see details about that wave — wavelength, frequency, uses, and real-world applications.</p>
+    </div>
+
+    <div class="tut-section">
+      <h4>🤖 Step 3: Ask the AI Tutor</h4>
+      <p>Type any question about EM waves in the chat box. Use the calculator to convert wavelength ↔ frequency.</p>
+    </div>
+
+    <div class="tut-section">
+      <h4>🎮 Step 4: Play the Games</h4>
+      <p>Test your knowledge with Solo, Group, or Teacher mode. <span class="highlight">🤗 Easy Read mode</span> is available for students who need simpler questions!</p>
+    </div>
+
+    <div class="tut-buttons">
+      <button class="btn" onclick="closeTutorial()">🚀 Start Learning!</button>
+      <button class="btn btn-secondary" onclick="closeTutorial()">Skip</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ============================================================
+  // ACCESSIBILITY MODE
+  // ============================================================
+  let accessibilityMode = false;
+
+  function toggleAccessibility() {
+    accessibilityMode = !accessibilityMode;
+    document.body.classList.toggle('accessibility-mode', accessibilityMode);
+    const btn = document.getElementById('accessibilityToggle');
+    btn.textContent = accessibilityMode ? '♿ Accessible ON' : '♿ Accessible';
+    btn.classList.toggle('on', accessibilityMode);
+    try { localStorage.setItem('em_accessibility_mode', accessibilityMode ? 'true' : 'false'); } catch(e) {}
+  }
+
+  try {
+    if (localStorage.getItem('em_accessibility_mode') === 'true') toggleAccessibility();
+  } catch(e) {}
+
+  // ============================================================
+  // PAGE NAVIGATION
+  // ============================================================
+  let currentPage = 0;
+
+  function goToPage(pageNum) {
+    if (pageNum < 0 || pageNum >= 4) return;
+    currentPage = pageNum;
+    document.querySelectorAll('.page').forEach((el, i) => el.classList.toggle('active', i === pageNum));
+    document.querySelectorAll('.page-btn').forEach((el, i) => {
+      el.classList.toggle('active', i === pageNum);
+      el.classList.toggle('done', i < pageNum);
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ============================================================
+  // TUTORIAL
+  // ============================================================
+  function showTutorial() { document.getElementById('tutorialOverlay').style.display = 'flex'; }
+  function closeTutorial() { document.getElementById('tutorialOverlay').style.display = 'none'; }
+  document.addEventListener('click', function(e) {
+    if (e.target === document.getElementById('tutorialOverlay')) closeTutorial();
+  });
+
+  function checkTutorialSeen() {
+    try {
+      if (!localStorage.getItem('em_tutorial_seen_v4')) {
+        setTimeout(showTutorial, 500);
+        localStorage.setItem('em_tutorial_seen_v4', 'true');
+      }
+    } catch(e) { setTimeout(showTutorial, 500); }
+  }
+
+  // ============================================================
+  // SOUND EFFECTS
+  // ============================================================
+  let soundEnabled = true;
+  let audioCtx = null;
+
+  function initAudio() {
+    if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} }
+    return audioCtx;
+  }
+
+  function playTone(freq, duration, type = 'sine', vol = 0.3) {
+    if (!soundEnabled) return;
+    try {
+      const ctx = initAudio();
+      if (!ctx) return;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = type;
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(vol, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + duration);
+    } catch(e) {}
+  }
+
+  function playCorrectSound() {
+    playTone(523, 0.15); setTimeout(() => playTone(659, 0.15), 150); setTimeout(() => playTone(784, 0.25), 300);
+  }
+  function playWrongSound() { playTone(300, 0.3, 'sawtooth', 0.2); setTimeout(() => playTone(250, 0.4, 'sawtooth', 0.2), 200); }
+  function playTimerWarningSound() { playTone(880, 0.1, 'square', 0.15); setTimeout(() => playTone(880, 0.1, 'square', 0.15), 300); setTimeout(() => playTone(880, 0.15, 'square', 0.2), 600); }
+  function playTimeUpSound() { playTone(400, 0.3, 'sawtooth', 0.2); setTimeout(() => playTone(300, 0.5, 'sawtooth', 0.2), 250); setTimeout(() => playTone(200, 0.6, 'sawtooth', 0.25), 500); }
+  function playPassedSound() { [523,587,659,784,880].forEach((f,i) => setTimeout(() => playTone(f,0.2), i*150)); setTimeout(() => playTone(1047,0.4), 750); }
+  function playFailedSound() { [440,392,349,330].forEach((f,i) => setTimeout(() => playTone(f,0.3), i*250)); }
+
+  function toggleSound() {
+    soundEnabled = !soundEnabled;
+    const btn = document.getElementById('soundToggle');
+    btn.textContent = soundEnabled ? '🔊 Sound' : '🔇 Sound';
+    btn.className = 'sound-toggle ' + (soundEnabled ? 'on' : 'off');
+    if (soundEnabled) { playTone(523, 0.1); setTimeout(() => playTone(659, 0.1), 150); }
+  }
+
+  // ============================================================
+  // SPECTRUM DATA
+  // ============================================================
+  const BANDS = [
+    {id:'radio', name:'Radio Waves', fil:'Radio Waves', cls:'b-radio', flex:4, color:'#8B2635',
+     wl:'10 cm to several km', freq:'3 kHz – 300 MHz',
+     desc:'Longest wavelength and lowest frequency in the entire spectrum.',
+     uses:'Used for AM/FM radio broadcasts, TV signals, and cellphone communication.',
+     didYouKnow:'📻 The first radio broadcast was in 1906 by Reginald Fessenden!',
+     visuals:[{icon:'📻', label:'AM/FM Radio'},{icon:'📺', label:'TV Broadcast'},{icon:'📱', label:'Cellphone'},{icon:'📡', label:'Communication'}]},
+    {id:'micro', name:'Microwaves', fil:'Microwaves', cls:'b-micro', flex:2.5, color:'#C2542C',
+     wl:'1 mm to 10 cm', freq:'300 MHz – 300 GHz',
+     desc:'Shorter wavelength than radio waves, higher frequency as well.',
+     uses:'Used in microwave ovens, radar, WiFi, and satellite communication.',
+     didYouKnow:'📡 Microwaves are used in radar to detect the speed of cars!',
+     visuals:[{icon:'🍕', label:'Microwave Oven'},{icon:'📶', label:'WiFi'},{icon:'🛰️', label:'Satellite'},{icon:'📡', label:'Radar'}]},
+    {id:'ir', name:'Infrared', fil:'Infrared', cls:'b-ir', flex:3, color:'#D4A017',
+     wl:'700 nm to 1 mm', freq:'300 GHz – 430 THz',
+     desc:'Felt as heat; higher frequency than microwaves.',
+     uses:'Used in remote controls, thermal cameras, and night vision goggles.',
+     didYouKnow:'🔥 Infrared cameras can see heat signatures even in complete darkness!',
+     visuals:[{icon:'📟', label:'Remote Control'},{icon:'🌡️', label:'Thermal Camera'},{icon:'🌙', label:'Night Vision'},{icon:'🔥', label:'Heat Sensing'}]},
+    {id:'visible', name:'Visible Light', fil:'Visible Light', cls:'b-visible', flex:1.2, color:'#3B6EA5',
+     wl:'400 nm – 700 nm', freq:'430 THz – 750 THz',
+     desc:'The only part of the spectrum visible to the human eye — ROYGBIV.',
+     uses:'Used in photography, fiber optics, and natural vision.',
+     didYouKnow:'🌈 The human eye can see about 10 million different colors!',
+     visuals:[{icon:'📷', label:'Photography'},{icon:'🌈', label:'Rainbow'},{icon:'🔦', label:'Lighting'},{icon:'👁️', label:'Human Vision'}]},
+    {id:'uv', name:'Ultraviolet', fil:'Ultraviolet (UV)', cls:'b-uv', flex:2, color:'#6B3FA0',
+     wl:'10 nm – 400 nm', freq:'750 THz – 30 PHz',
+     desc:'Higher energy than visible light; can damage skin if overexposed.',
+     uses:'Causes sunburn/tanning; used in sterilization and blacklights.',
+     didYouKnow:'☀️ UV rays from the sun help our bodies produce Vitamin D!',
+     visuals:[{icon:'☀️', label:'Sunlight'},{icon:'🧴', label:'Sunscreen'},{icon:'🦠', label:'Sterilization'},{icon:'💡', label:'Blacklight'}]},
+    {id:'xray', name:'X-rays', fil:'X-ray', cls:'b-xray', flex:2.8, color:'#4A2574',
+     wl:'0.01 nm – 10 nm', freq:'30 PHz – 30 EHz',
+     desc:'Very high frequency; can penetrate soft body tissue.',
+     uses:'Used in medical imaging (bone X-rays) and airport security scanners.',
+     didYouKnow:'🦴 X-rays were discovered accidentally by Wilhelm Roentgen in 1895!',
+     visuals:[{icon:'🦴', label:'Medical X-ray'},{icon:'🏥', label:'Healthcare'},{icon:'🛄', label:'Airport Security'},{icon:'🦷', label:'Dental X-ray'}]},
+    {id:'gamma', name:'Gamma Rays', fil:'Gamma Rays', cls:'b-gamma', flex:2.8, color:'#2D1B4E',
+     wl:'shorter than 0.01 nm', freq:'greater than 30 EHz',
+     desc:'Shortest wavelength and highest frequency — most powerful energy.',
+     uses:'Produced by nuclear reactions and outer space; used in cancer treatment.',
+     didYouKnow:'☢️ Gamma rays are the most energetic waves in the entire universe!',
+     visuals:[{icon:'☢️', label:'Nuclear Reactions'},{icon:'⭐', label:'Outer Space'},{icon:'💉', label:'Cancer Treatment'},{icon:'⚛️', label:'Research'}]}
+  ];
+
+  // ============================================================
+  // SPECTRUM BAR
+  // ============================================================
+  const spectrumBar = document.getElementById('spectrumBar');
+  
+  function renderBands() {
+    spectrumBar.innerHTML = BANDS.map(b => `
+      <div class="band ${b.cls}" style="flex:${b.flex}" data-id="${b.id}">
+        <span>${b.fil.split(' ')[0]}</span>
+      </div>
+    `).join('');
+    spectrumBar.querySelectorAll('.band').forEach(el => {
+      el.addEventListener('click', () => selectBand(el.dataset.id));
+    });
+  }
+  renderBands();
+
+  function renderVisuals(band) {
+    const grid = document.getElementById('visualGrid');
+    if (!band.visuals || band.visuals.length === 0) {
+      grid.innerHTML = '<div style="color:var(--muted);font-size:var(--font-size-base);">No visual references available</div>';
+      return;
+    }
+    grid.innerHTML = band.visuals.map(v => `
+      <div class="visual-item">
+        <span class="icon">${v.icon}</span>
+        <span class="label">${v.label}</span>
+      </div>
+    `).join('');
+  }
+
+  function selectBand(id) {
+    const b = BANDS.find(x => x.id === id);
+    spectrumBar.querySelectorAll('.band').forEach(el => el.classList.toggle('selected', el.dataset.id === id));
+    document.getElementById('detailSwatch').style.background = b.color;
+    document.getElementById('detailName').textContent = b.name;
+    document.getElementById('detailFil').textContent = b.fil;
+    document.getElementById('detailWl').textContent = b.wl;
+    document.getElementById('detailFreq').textContent = b.freq;
+    document.getElementById('detailDesc').textContent = b.desc;
+    document.getElementById('detailUses').innerHTML = `<strong>Uses:</strong> ${b.uses}`;
+    document.getElementById('didYouKnow').textContent = b.didYouKnow || '💡 Did you know? All EM waves travel at the speed of light!';
+    renderVisuals(b);
+  }
+  selectBand('visible');
+
+  // ============================================================
+  // CALCULATOR
+  // ============================================================
+  document.getElementById('calcBtn').addEventListener('click', () => {
+    const val = parseFloat(document.getElementById('wlInput').value);
+    const unit = parseFloat(document.getElementById('wlUnit').value);
+    const resultBox = document.getElementById('calcResult');
+    if (isNaN(val) || val <= 0) { resultBox.textContent = 'Please enter a valid number.'; return; }
+    const wavelengthM = val * unit;
+    const freq = 3e8 / wavelengthM;
+    const RANGES = [
+      {id:'radio', min:0.1, max:1e5},
+      {id:'micro', min:1e-3, max:0.1},
+      {id:'ir', min:7e-7, max:1e-3},
+      {id:'visible', min:4e-7, max:7e-7},
+      {id:'uv', min:1e-8, max:4e-7},
+      {id:'xray', min:1e-11, max:1e-8},
+      {id:'gamma', min:0, max:1e-11}
+    ];
+    const match = RANGES.find(r => wavelengthM >= r.min && wavelengthM < r.max) || RANGES[RANGES.length - 1];
+    const bandInfo = BANDS.find(b => b.id === match.id);
+    resultBox.innerHTML = `f = c / λ = ${freq.toExponential(3)} Hz → belongs to the <span class="tag">${bandInfo.fil}</span> range`;
+  });
+
+  // ============================================================
+  // AI TUTOR
+  // ============================================================
+  const chatLog = document.getElementById('chatLog');
+  const chatInput = document.getElementById('chatInput');
+  const sendBtn = document.getElementById('sendBtn');
+  const typingIndicator = document.getElementById('typingIndicator');
+  let chatHistory = [];
+
+  function appendMsg(text, cls) {
+    const div = document.createElement('div');
+    div.className = 'msg ' + cls;
+    div.textContent = text;
+    chatLog.appendChild(div);
+    chatLog.scrollTop = chatLog.scrollHeight;
+  }
+
+  async function sendChat() {
+    const text = chatInput.value.trim();
+    if (!text) return;
+    appendMsg(text, 'user');
+    chatHistory.push({ role: 'user', content: text });
+    chatInput.value = '';
+    sendBtn.disabled = true;
+    typingIndicator.style.display = 'block';
+
+    try {
+      const result = await google.script.run
+        .withSuccessHandler((response) => {
+          typingIndicator.style.display = 'none';
+          sendBtn.disabled = false;
+          if (response.success) {
+            appendMsg(response.response, 'ai');
+            chatHistory.push({ role: 'assistant', content: response.response });
+          } else {
+            appendMsg('⚠️ ' + (response.error || 'Something went wrong.'), 'ai');
+          }
+        })
+        .withFailureHandler((error) => {
+          typingIndicator.style.display = 'none';
+          sendBtn.disabled = false;
+          appendMsg('⚠️ Error: ' + error, 'ai');
+        })
+        .sendTutorMessage(text, chatHistory);
+    } catch (e) {
+      typingIndicator.style.display = 'none';
+      sendBtn.disabled = false;
+      appendMsg('⚠️ Connection error.', 'ai');
+    }
+  }
+
+  sendBtn.addEventListener('click', sendChat);
+  chatInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendChat(); });
+
+  document.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      chatInput.value = chip.dataset.question;
+      sendChat();
+    });
+  });
+
+  // ============================================================
+  // QUIZ ENGINE
+  // ============================================================
+  const genQuizBtn = document.getElementById('genQuizBtn');
+  const gameContainer = document.getElementById('gameContainer');
+  const gameStatus = document.getElementById('gameStatus');
+  
+  let currentQuiz = [];
+  let currentQuestionIndex = 0;
+  let score = 0;
+  let streak = 0;
+  let totalQuestions = 0;
+  let timerInterval = null;
+  let timeLeft = 15;
+  let isAnswered = false;
+  let gameActive = false;
+  let selectedDifficulty = 'easy';
+  let pointsMultiplier = 1;
+  let correctCount = 0;
+  let gameMode = 'solo';
+  let timerWarningPlayed = false;
+  let timerUpPlayed = false;
+  let isAccessibilityMode = false;
+  
+  let studentName = '';
+  let scoreSaved = false;
+  let currentPageLeaderboard = 0;
+  const PAGE_SIZE = 15;
+
+  let teams = [
+    { id: 0, name: 'Team 1', color: '#FF6B6B', score: 0, correct: 0, totalAnswered: 0 },
+    { id: 1, name: 'Team 2', color: '#4ECDC4', score: 0, correct: 0, totalAnswered: 0 }
+  ];
+  let activeTeamId = 0;
+
+  let students = [];
+  let currentStudentId = 0;
+  const STUDENT_COLORS = ['#FF6B6B', '#4ECDC4', '#FFE66D', '#A8E6CF', '#DDA0DD', '#87CEEB', '#FFB347', '#98D8C8'];
+
+  const BASE_POINTS = 100;
+  const STREAK_BONUS = 50;
+
+  // ============================================================
+  // LEADERBOARD
+  // ============================================================
+  async function loadLeaderboard(page = 0) {
+    currentPageLeaderboard = page;
+    try {
+      const result = await google.script.run
+        .withSuccessHandler((response) => {
+          if (response.success) displayLeaderboard(response, page);
+        })
+        .withFailureHandler((error) => console.error('Error loading leaderboard:', error))
+        .getStudentsPage(page, PAGE_SIZE);
+    } catch (e) { console.error('Error:', e); }
+  }
+
+  function displayLeaderboard(data, page) {
+    const container = document.getElementById('leaderboardContainer');
+    if (!container) return;
+    const students = data.students || [];
+    const total = data.total || 0;
+    const totalPages = data.totalPages || 1;
+
+    document.getElementById('lbTotalStudents').textContent = total > 60 ? '60+' : total;
+    document.getElementById('lbDisplayed').textContent = data.displayed || 0;
+    document.getElementById('lbMaxDisplayed').textContent = data.maxDisplayed || 60;
+
+    if (students.length === 0) {
+      container.innerHTML = `<div class="empty-leaderboard">📊 No scores yet. Be the first to take the quiz!</div>`;
+      return;
+    }
+
+    let html = `<div class="lb-header"><span>#</span><span>Student</span><span>Best Score</span><span>Attempts</span><span>Latest</span></div>`;
+    const startRank = page * PAGE_SIZE + 1;
+
+    students.forEach((s, i) => {
+      const rank = startRank + i;
+      const rankClass = rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : '';
+      const rankEmoji = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
+      const latestDate = s.latestDate ? new Date(s.latestDate).toLocaleDateString() : 'N/A';
+      const isYou = studentName && s.name.toLowerCase() === studentName.toLowerCase();
+      html += `
+        <div class="lb-row ${isYou ? 'you' : ''}">
+          <span class="rank ${rankClass}">${rankEmoji}</span>
+          <span style="font-weight:${isYou ? '600' : '400'};">${s.name} ${isYou ? '👈' : ''}</span>
+          <span class="lb-score">${s.bestScore}</span>
+          <span class="lb-detail">${s.totalAttempts}</span>
+          <span class="lb-date">${latestDate}</span>
+        </div>
+      `;
+    });
+
+    let paginationHTML = '';
+    if (totalPages > 1) {
+      paginationHTML = `
+        <div class="lb-pagination">
+          <button onclick="loadLeaderboard(${page - 1})" ${page === 0 ? 'disabled' : ''}>◀ Prev</button>
+          ${Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+            const p = i;
+            return `<button class="${p === page ? 'active-page' : ''}" onclick="loadLeaderboard(${p})">${p + 1}</button>`;
+          }).join('')}
+          ${totalPages > 5 ? `<span class="page-info">...</span><button onclick="loadLeaderboard(${totalPages - 1})">${totalPages}</button>` : ''}
+          <button onclick="loadLeaderboard(${page + 1})" ${page >= totalPages - 1 ? 'disabled' : ''}>Next ▶</button>
+          <span class="page-info">${page + 1}/${totalPages}</span>
+        </div>
+      `;
+    }
+    html += paginationHTML;
+    container.innerHTML = html;
+  }
+
+  // ============================================================
+  // MODE SELECTION
+  // ============================================================
+  function selectGameMode(mode) {
+    gameMode = mode;
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+      btn.className = 'mode-btn';
+      if (btn.dataset.mode === mode) btn.classList.add('active-' + mode);
+    });
+    document.getElementById('soloModeContent').style.display = mode === 'solo' ? 'block' : 'none';
+    if (gameActive) {
+      if (confirm('Changing mode will end the current game. Continue?')) {
+        if (timerInterval) clearInterval(timerInterval);
+        gameActive = false;
+        showGameStart();
+      }
+    } else { showGameStart(); }
+  }
+
+  function selectDifficulty(diff) {
+    selectedDifficulty = diff;
+    isAccessibilityMode = (diff === 'accessibility');
+    document.querySelectorAll('.diff-btn').forEach(btn => {
+      btn.className = 'diff-btn';
+      if (btn.dataset.diff === diff) btn.classList.add('active-' + diff);
+    });
+    const labels = { easy: '🌱 Easy', medium: '⚡ Medium', hard: '🔥 Hard', accessibility: '🤗 Easy Read' };
+    const points = { easy: '1× points', medium: '1.5× points', hard: '2× points', accessibility: '1.2× points' };
+    document.getElementById('diffBadge').textContent = labels[diff] + ' (' + points[diff] + ')';
+    gameStatus.textContent = 'Selected: ' + labels[diff] + ' — Click "New Game" to start!';
+    if (gameActive) {
+      if (confirm('Changing difficulty will end the current game. Continue?')) {
+        if (timerInterval) clearInterval(timerInterval);
+        gameActive = false;
+        showGameStart();
+      }
+    }
+  }
+
+  // ============================================================
+  // SHOW GAME START
+  // ============================================================
+  function showGameStart() {
+    const diffLabels = {
+      easy: '🌱 Easy — Basic questions, 1× points',
+      medium: '⚡ Medium — Moderate questions, 1.5× points',
+      hard: '🔥 Hard — Challenging questions, 2× points',
+      accessibility: '🤗 Easy Read — Simple questions, 1.2× points'
+    };
+    const diffColors = {
+      easy: 'var(--good)', medium: 'var(--gold)', hard: 'var(--bad)', accessibility: '#9C27B0'
+    };
+    const modeLabels = {
+      solo: '🎯 Solo Mode — Play individually, scores are tracked!',
+      group: '👥 Group Mode — Teams compete!',
+      teacher: '👨‍🏫 Teacher Mode — Monitor students in real-time'
+    };
+
+    let setupHTML = '';
+    if (gameMode === 'group') {
+      setupHTML = `
+        <div class="team-setup">
+          <div style="font-size:var(--font-size-base);color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;">👥 Teams</div>
+          <div class="team-row">
+            ${teams.map((t, i) => `
+              <span style="display:flex;align-items:center;gap:6px;font-size:var(--font-size-base);">
+                <span class="team-badge" style="background:${t.color};"></span>
+                <input type="text" value="${t.name}" onchange="updateTeamName(${i}, this.value)" style="width:100px;background:var(--surface-2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:6px 10px;font-size:var(--font-size-base);">
+              </span>
+            `).join('')}
+            <button class="btn-secondary" onclick="addTeam()" style="font-size:14px;padding:4px 12px;border:1px solid var(--line);background:var(--surface-2);color:var(--text);border-radius:8px;cursor:pointer;">+ Add</button>
+            <button class="btn-secondary" onclick="removeTeam()" style="font-size:14px;padding:4px 12px;border:1px solid var(--line);background:var(--surface-2);color:var(--text);border-radius:8px;cursor:pointer;">− Remove</button>
+          </div>
+        </div>
+      `;
+    } else if (gameMode === 'teacher') {
+      if (students.length === 0) {
+        students = [
+          { id: 0, name: 'Student 1', color: '#FF6B6B', score: 0, correct: 0, totalAnswered: 0, answers: [] },
+          { id: 1, name: 'Student 2', color: '#4ECDC4', score: 0, correct: 0, totalAnswered: 0, answers: [] },
+          { id: 2, name: 'Student 3', color: '#FFE66D', score: 0, correct: 0, totalAnswered: 0, answers: [] }
+        ];
+      }
+      setupHTML = `
+        <div class="team-setup">
+          <div style="font-size:var(--font-size-base);color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;">👨‍🎓 Students</div>
+          <div class="team-row">
+            ${students.map((s, i) => `
+              <span style="display:flex;align-items:center;gap:6px;font-size:var(--font-size-base);">
+                <span class="team-badge" style="background:${s.color};"></span>
+                <input type="text" value="${s.name}" onchange="updateStudentName(${i}, this.value)" style="width:100px;background:var(--surface-2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:6px 10px;font-size:var(--font-size-base);">
+                <span style="font-size:var(--font-size-base);color:var(--muted);">${s.score} pts</span>
+              </span>
+            `).join('')}
+            <button class="btn-secondary" onclick="addStudent()" style="font-size:14px;padding:4px 12px;border:1px solid var(--line);background:var(--surface-2);color:var(--text);border-radius:8px;cursor:pointer;">+ Add</button>
+            <button class="btn-secondary" onclick="removeStudent()" style="font-size:14px;padding:4px 12px;border:1px solid var(--line);background:var(--surface-2);color:var(--text);border-radius:8px;cursor:pointer;">− Remove</button>
+          </div>
+          <div style="font-size:var(--font-size-base);color:var(--muted);margin-top:6px;">💡 Each student answers individually. Teacher can monitor all scores in real-time.</div>
+        </div>
+      `;
+    }
+
+    gameContainer.innerHTML = `
+      <div class="game-over">
+        <div style="font-size:48px;margin-bottom:4px;">${gameMode === 'solo' ? '🎯' : gameMode === 'group' ? '👥' : '👨‍🏫'}</div>
+        <h2 style="font-size:var(--font-size-xl);margin-bottom:4px;">${modeLabels[gameMode]}</h2>
+        ${isAccessibilityMode ? `<p style="color:#9C27B0;font-size:var(--font-size-large);font-weight:600;margin-bottom:4px;">🤗 Easy Read Mode — Questions are simpler and easier to understand!</p>` : ''}
+        <p style="color:var(--muted);font-size:var(--font-size-base);margin-bottom:4px;">
+          Level: <span style="color:${diffColors[selectedDifficulty]};font-weight:600;">${selectedDifficulty.toUpperCase()}</span>
+        </p>
+        <p style="color:var(--muted);font-size:var(--font-size-base);margin-bottom:12px;">${diffLabels[selectedDifficulty]}</p>
+        ${setupHTML}
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:14px;">
+          <span style="font-size:var(--font-size-base);background:var(--surface);padding:6px 14px;border-radius:14px;border:1px solid var(--line);">🎯 ${BASE_POINTS} pts/correct</span>
+          <span style="font-size:var(--font-size-base);background:var(--surface);padding:6px 14px;border-radius:14px;border:1px solid var(--line);">🔥 ${STREAK_BONUS} bonus for 3+ streak</span>
+          <span style="font-size:var(--font-size-base);background:var(--surface);padding:6px 14px;border-radius:14px;border:1px solid var(--line);">⏱️ 15 sec per question</span>
+        </div>
+        <button class="btn" onclick="startGame()" style="font-size:var(--font-size-large);padding:14px 36px;">🚀 Start Game</button>
+      </div>
+    `;
+    if (gameMode === 'solo') loadLeaderboard(0);
+  }
+
+  // ============================================================
+  // STUDENT NAME MANAGEMENT
+  // ============================================================
+  function updateStudentNameInput(value) {
+    studentName = value.trim();
+    const status = document.getElementById('nameStatus');
+    if (status) {
+      status.textContent = studentName ? '✅ Set' : '⚠️ Enter name';
+      status.style.color = studentName ? 'var(--good)' : 'var(--bad)';
+    }
+  }
+
+  function setStudentName() {
+    const input = document.getElementById('studentNameInput');
+    if (input) {
+      studentName = input.value.trim();
+      updateStudentNameInput(studentName);
+      loadLeaderboard(currentPageLeaderboard);
+    }
+  }
+
+  // ============================================================
+  // TEAM MANAGEMENT
+  // ============================================================
+  function updateTeamName(index, value) { if (teams[index]) teams[index].name = value; }
+
+  function addTeam() {
+    if (teams.length >= 6) { alert('Maximum 6 teams allowed.'); return; }
+    const colors = ['#FFE66D', '#A8E6CF', '#DDA0DD', '#87CEEB', '#FFB347', '#98D8C8'];
+    const idx = teams.length;
+    teams.push({ id: idx, name: 'Team ' + (idx + 1), color: colors[idx % colors.length], score: 0, correct: 0, totalAnswered: 0 });
+    showGameStart();
+  }
+
+  function removeTeam() {
+    if (teams.length <= 2) { alert('Minimum 2 teams required.'); return; }
+    teams.pop();
+    if (activeTeamId >= teams.length) activeTeamId = teams.length - 1;
+    showGameStart();
+  }
+
+  // ============================================================
+  // STUDENT MANAGEMENT (Teacher Mode)
+  // ============================================================
+  function updateStudentName(index, value) { if (students[index]) students[index].name = value; }
+
+  function addStudent() {
+    if (students.length >= 8) { alert('Maximum 8 students allowed.'); return; }
+    const idx = students.length;
+    students.push({ id: idx, name: 'Student ' + (idx + 1), color: STUDENT_COLORS[idx % STUDENT_COLORS.length], score: 0, correct: 0, totalAnswered: 0, answers: [] });
+    showGameStart();
+  }
+
+  function removeStudent() {
+    if (students.length <= 2) { alert('Minimum 2 students required.'); return; }
+    students.pop();
+    if (currentStudentId >= students.length) currentStudentId = students.length - 1;
+    showGameStart();
+  }
+
+  // ============================================================
+  // START GAME
+  // ============================================================
+  function startGame() {
+    if (gameMode === 'solo' && !studentName) {
+      alert('Please enter your name first!');
+      return;
+    }
+    generateQuizData();
+  }
+
+  async function generateQuizData() {
+    genQuizBtn.disabled = true;
+    genQuizBtn.innerHTML = '<span class="loading-spinner"></span> Loading...';
+    gameContainer.innerHTML = '<div class="empty-state">📚 Loading ' + selectedDifficulty + ' questions...</div>';
+    scoreSaved = false;
+
+    try {
+      const result = await google.script.run
+        .withSuccessHandler((response) => {
+          genQuizBtn.disabled = false;
+          genQuizBtn.innerHTML = '🔄 New Game';
+          if (response.success && response.quiz && response.quiz.length > 0) {
+            if (gameMode === 'group') {
+              teams.forEach(t => { t.score = 0; t.correct = 0; t.totalAnswered = 0; });
+              activeTeamId = 0;
+            } else if (gameMode === 'teacher') {
+              students.forEach(s => { s.score = 0; s.correct = 0; s.totalAnswered = 0; s.answers = []; });
+              currentStudentId = 0;
+            }
+            currentQuiz = response.quiz;
+            totalQuestions = response.totalQuestions || response.quiz.length;
+            pointsMultiplier = response.pointsMultiplier || 1;
+            currentQuestionIndex = 0;
+            score = 0;
+            streak = 0;
+            correctCount = 0;
+            gameActive = true;
+            timerWarningPlayed = false;
+            timerUpPlayed = false;
+            gameStatus.textContent = '🎯 ' + selectedDifficulty.charAt(0).toUpperCase() + selectedDifficulty.slice(1) + ' — ' + totalQuestions + ' questions';
+            renderQuestion();
+          } else {
+            gameContainer.innerHTML = '<div class="empty-state">⚠️ ' + (response.error || 'Could not load quiz. Please try again.') + '</div>';
+          }
+        })
+        .withFailureHandler((error) => {
+          genQuizBtn.disabled = false;
+          genQuizBtn.innerHTML = '🔄 New Game';
+          gameContainer.innerHTML = '<div class="empty-state">⚠️ Error: ' + error + '</div>';
+        })
+        .generateQuiz(10, selectedDifficulty, isAccessibilityMode);
+    } catch (e) {
+      genQuizBtn.disabled = false;
+      genQuizBtn.innerHTML = '🔄 New Game';
+      gameContainer.innerHTML = '<div class="empty-state">⚠️ Something went wrong. Please try again.</div>';
+    }
+  }
+
+  // ============================================================
+  // RENDER QUESTION
+  // ============================================================
+  function renderQuestion() {
+    if (currentQuestionIndex >= totalQuestions) { showGameOver(); return; }
+
+    const q = currentQuiz[currentQuestionIndex];
+    const progress = ((currentQuestionIndex) / totalQuestions * 100);
+    const qNum = currentQuestionIndex + 1;
+
+    isAnswered = false;
+    timeLeft = 15;
+    timerWarningPlayed = false;
+    timerUpPlayed = false;
+
+    const progressClass = 'progress-' + selectedDifficulty;
+
+    let currentEntity = null;
+    let entityDisplay = '';
+    if (gameMode === 'group') {
+      currentEntity = teams[activeTeamId];
+      entityDisplay = `
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <span class="team-badge" style="background:${currentEntity.color};width:14px;height:14px;border-radius:50%;display:inline-block;"></span>
+          <span style="font-size:13px;font-weight:600;">${currentEntity.name}'s Turn</span>
+          <span style="font-size:10px;color:var(--muted);">(${currentEntity.score} pts)</span>
+        </div>
+      `;
+    } else if (gameMode === 'teacher') {
+      currentEntity = students[currentStudentId];
+      entityDisplay = `
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <span class="team-badge" style="background:${currentEntity.color};width:14px;height:14px;border-radius:50%;display:inline-block;"></span>
+          <span style="font-size:13px;font-weight:600;">${currentEntity.name}'s Turn</span>
+          <span style="font-size:10px;color:var(--muted);">(${currentEntity.score} pts)</span>
+          <span style="font-size:9px;color:var(--muted);">Student ${currentStudentId + 1}/${students.length}</span>
+        </div>
+      `;
+    }
+
+    let teamScoreboardHTML = '';
+    if (gameMode === 'group' && teams.length > 0) {
+      teamScoreboardHTML = `
+        <div class="team-scoreboard">
+          ${teams.map((t, i) => `
+            <div class="team-score ${i === activeTeamId ? 'active-team' : ''}" style="border-color:${i === activeTeamId ? t.color : 'var(--line)'};">
+              <div class="team-name"><span class="team-badge-sm" style="background:${t.color};"></span>${t.name}</div>
+              <div class="team-pts" style="color:${t.color};">${t.score}</div>
+              <div class="team-correct">${t.correct}/${t.totalAnswered} correct</div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    let studentDashboardHTML = '';
+    if (gameMode === 'teacher') {
+      studentDashboardHTML = renderStudentDashboard();
+    }
+
+    gameContainer.innerHTML = `
+      <div class="game-header">
+        <div class="game-stat stat-score">
+          <div class="label">🏆 ${gameMode === 'solo' ? 'Score' : gameMode === 'group' ? 'Points' : 'Student Points'}</div>
+          <div class="value">${gameMode === 'solo' ? score : gameMode === 'group' ? (teams[activeTeamId]?.score || 0) : (students[currentStudentId]?.score || 0)}</div>
+        </div>
+        <div class="game-stat stat-streak">
+          <div class="label">🔥 Streak</div>
+          <div class="value">${streak}</div>
+        </div>
+        <div class="game-stat stat-timer" id="timerStat">
+          <div class="label">⏱️ Time</div>
+          <div class="value" id="timerDisplay">${timeLeft}s</div>
+        </div>
+        <div class="game-stat stat-question">
+          <div class="label">📝 Question</div>
+          <div class="value">${qNum}/${totalQuestions}</div>
+        </div>
+      </div>
+      ${entityDisplay}
+      ${teamScoreboardHTML}
+      ${studentDashboardHTML}
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <span class="diff-indicator ${selectedDifficulty}">${selectedDifficulty.toUpperCase()}</span>
+        <span style="font-size:10px;color:var(--muted);">${pointsMultiplier}× points</span>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-bar ${progressClass}" style="width:${progress}%;"></div>
+      </div>
+      <div class="question-card">
+        <div class="question-number">Question ${qNum} of ${totalQuestions}</div>
+        <div class="question-text">${q.question}</div>
+      </div>
+      <div class="options-grid" id="optionsGrid">
+        ${q.options.map((opt, i) => `
+          <button class="game-opt" data-index="${i}" onclick="selectOption(${i})">
+            <span class="opt-label">${String.fromCharCode(65 + i)}.</span> ${opt}
+          </button>
+        `).join('')}
+      </div>
+      <div class="feedback" id="feedback"></div>
+      <div class="game-actions">
+        ${gameMode === 'group' ? `
+          <div class="team-selector">
+            <span class="ts-label">Switch Team:</span>
+            ${teams.map((t, i) => `
+              <button onclick="switchTeam(${i})" class="${i === activeTeamId ? 'active-team-btn' : ''}" style="border-color:${i === activeTeamId ? t.color : 'var(--line)'};">
+                <span class="team-badge" style="background:${t.color};width:8px;height:8px;border-radius:50%;display:inline-block;"></span>
+                ${t.name}
+              </button>
+            `).join('')}
+          </div>
+        ` : ''}
+        <button class="btn" id="nextBtn" onclick="nextQuestion()" style="display:none;">Next →</button>
+      </div>
+    `;
+
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      timeLeft--;
+      const timerDisplay = document.getElementById('timerDisplay');
+      if (timerDisplay) {
+        timerDisplay.textContent = timeLeft + 's';
+        const stat = document.getElementById('timerStat');
+        if (timeLeft <= 5 && !timerWarningPlayed) {
+          timerWarningPlayed = true;
+          playTimerWarningSound();
+        }
+        if (timeLeft <= 3) stat.classList.add('timer-warning');
+        else stat.classList.remove('timer-warning');
+      }
+      if (timeLeft <= 0) {
+        clearInterval(timerInterval);
+        if (!isAnswered) {
+          if (!timerUpPlayed) { timerUpPlayed = true; playTimeUpSound(); }
+          handleTimeout();
+        }
+      }
+    }, 1000);
+  }
+
+  // ============================================================
+  // RENDER STUDENT DASHBOARD
+  // ============================================================
+  function renderStudentDashboard() {
+    if (gameMode !== 'teacher' || students.length === 0) return '';
+    let html = `
+      <div class="student-dashboard">
+        <div class="dashboard-header"><span>Student</span><span>Score</span><span>Correct</span><span>Answered</span><span>Status</span></div>
+    `;
+    students.forEach((s, i) => {
+      const isActive = i === currentStudentId;
+      const statusClass = s.totalAnswered === totalQuestions ? 'done' : isActive ? 'current' : s.totalAnswered > 0 ? 'active' : 'waiting';
+      const statusLabel = s.totalAnswered === totalQuestions ? '✅ Done' : isActive ? '🔵 Answering' : s.totalAnswered > 0 ? '🟢 Active' : '⏳ Waiting';
+      const scoreClass = s.score > totalQuestions * BASE_POINTS * 0.7 ? 'high' : s.score > totalQuestions * BASE_POINTS * 0.3 ? 'medium' : 'low';
+      html += `
+        <div class="student-row ${isActive ? 'active' : ''}" onclick="switchStudent(${i})">
+          <div class="name"><span class="badge-color" style="background:${s.color};"></span>${s.name}</div>
+          <div class="score ${scoreClass}">${s.score}</div>
+          <div class="correct">${s.correct}/${s.totalAnswered}</div>
+          <div class="correct">${s.totalAnswered}/${totalQuestions}</div>
+          <span class="status ${statusClass}">${statusLabel}</span>
+        </div>
+      `;
+    });
+    html += `
+        <div class="student-controls">
+          ${students.map((s, i) => `
+            <button onclick="switchStudent(${i})" class="${i === currentStudentId ? 'active-student' : ''}">
+              <span class="team-badge-sm" style="background:${s.color};display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;"></span>
+              ${s.name} (${s.score})
+            </button>
+          `).join('')}
+        </div>
+      </div>
+    `;
+    return html;
+  }
+
+  // ============================================================
+  // SWITCH TEAM / STUDENT
+  // ============================================================
+  function switchTeam(teamId) {
+    if (isAnswered) return;
+    if (teamId === activeTeamId) return;
+    activeTeamId = teamId;
+    renderQuestion();
+  }
+
+  function switchStudent(studentId) {
+    if (isAnswered) return;
+    if (studentId === currentStudentId) return;
+    currentStudentId = studentId;
+    renderQuestion();
+  }
+
+  // ============================================================
+  // SAVE SCORE TO SERVER
+  // ============================================================
+  function saveScoreToServer() {
+    if (scoreSaved || gameMode !== 'solo' || !studentName) return;
+    scoreSaved = true;
+    google.script.run
+      .withSuccessHandler(() => loadLeaderboard(currentPageLeaderboard))
+      .withFailureHandler((error) => console.error('Error saving score:', error))
+      .saveStudentScore(studentName, score, correctCount, totalQuestions, selectedDifficulty);
+  }
+
+  // ============================================================
+  // SELECT OPTION
+  // ============================================================
+  function selectOption(index) {
+    if (isAnswered) return;
+    isAnswered = true;
+    if (timerInterval) clearInterval(timerInterval);
+
+    const q = currentQuiz[currentQuestionIndex];
+    const isCorrect = (index === q.correctIndex);
+
+    const options = document.querySelectorAll('.game-opt');
+    options.forEach((el, i) => {
+      el.classList.add('disabled');
+      if (i === q.correctIndex) el.classList.add('correct');
+      if (i === index && !isCorrect) el.classList.add('wrong');
+      if (i === index && isCorrect) el.classList.add('selected');
+    });
+
+    let pointsEarned = 0;
+    let entityName = '';
+
+    if (isCorrect) {
+      pointsEarned = Math.round(BASE_POINTS * pointsMultiplier);
+      if (streak >= 3) pointsEarned += Math.round(STREAK_BONUS * pointsMultiplier);
+      if (gameMode === 'solo') score += pointsEarned;
+      else if (gameMode === 'group') {
+        teams[activeTeamId].score += pointsEarned;
+        teams[activeTeamId].correct++;
+        teams[activeTeamId].totalAnswered++;
+        entityName = ' (' + teams[activeTeamId].name + ')';
+      } else if (gameMode === 'teacher') {
+        students[currentStudentId].score += pointsEarned;
+        students[currentStudentId].correct++;
+        students[currentStudentId].totalAnswered++;
+        students[currentStudentId].answers.push({ question: q.question, correct: true });
+        entityName = ' (' + students[currentStudentId].name + ')';
+      }
+      streak++;
+      correctCount++;
+      playCorrectSound();
+    } else {
+      streak = 0;
+      playWrongSound();
+      if (gameMode === 'group') {
+        teams[activeTeamId].totalAnswered++;
+        entityName = ' (' + teams[activeTeamId].name + ')';
+      } else if (gameMode === 'teacher') {
+        students[currentStudentId].totalAnswered++;
+        students[currentStudentId].answers.push({ question: q.question, correct: false });
+        entityName = ' (' + students[currentStudentId].name + ')';
+      }
+    }
+
+    const feedback = document.getElementById('feedback');
+    feedback.className = 'feedback show ' + (isCorrect ? 'correct' : 'wrong');
+    const emoji = isCorrect ? '✅' : '❌';
+    let bonusText = '';
+    if (isCorrect) {
+      bonusText = ` +${pointsEarned} pts${streak >= 3 ? ' 🔥' : ''}`;
+    }
+    feedback.innerHTML = `
+      <strong>${emoji} ${isCorrect ? 'Correct!' : 'Wrong!'}</strong>${entityName}
+      ${bonusText}
+      <div class="explanation">💡 ${q.explanation}</div>
+    `;
+
+    document.getElementById('nextBtn').style.display = 'inline-block';
+    if (gameMode === 'solo') document.querySelector('.stat-score .value').textContent = score;
+    else if (gameMode === 'group') document.querySelector('.stat-score .value').textContent = teams[activeTeamId].score;
+    else document.querySelector('.stat-score .value').textContent = students[currentStudentId].score;
+    document.querySelector('.stat-streak .value').textContent = streak;
+  }
+
+  // ============================================================
+  // HANDLE TIMEOUT
+  // ============================================================
+  function handleTimeout() {
+    if (isAnswered) return;
+    isAnswered = true;
+    const q = currentQuiz[currentQuestionIndex];
+    const options = document.querySelectorAll('.game-opt');
+    options.forEach((el, i) => {
+      el.classList.add('disabled');
+      if (i === q.correctIndex) el.classList.add('correct');
+    });
+    streak = 0;
+    document.querySelector('.stat-streak .value').textContent = streak;
+    if (gameMode === 'group') teams[activeTeamId].totalAnswered++;
+    else if (gameMode === 'teacher') {
+      students[currentStudentId].totalAnswered++;
+      students[currentStudentId].answers.push({ question: q.question, correct: false });
+    }
+    const feedback = document.getElementById('feedback');
+    feedback.className = 'feedback show wrong';
+    feedback.innerHTML = `<strong>⏰ Time's up!</strong><div class="explanation">💡 ${q.explanation}</div>`;
+    document.getElementById('nextBtn').style.display = 'inline-block';
+  }
+
+  // ============================================================
+  // NEXT QUESTION
+  // ============================================================
+  function nextQuestion() {
+    if (gameMode === 'group') activeTeamId = (activeTeamId + 1) % teams.length;
+    else if (gameMode === 'teacher') {
+      let nextStudent = (currentStudentId + 1) % students.length;
+      let attempts = 0;
+      while (students[nextStudent].totalAnswered >= totalQuestions && attempts < students.length) {
+        nextStudent = (nextStudent + 1) % students.length;
+        attempts++;
+      }
+      if (attempts < students.length) currentStudentId = nextStudent;
+    }
+    currentQuestionIndex++;
+    renderQuestion();
+  }
+
+  // ============================================================
+  // SHOW GAME OVER
+  // ============================================================
+  function showGameOver() {
+    if (timerInterval) clearInterval(timerInterval);
+    gameActive = false;
+    if (gameMode === 'solo' && studentName && !scoreSaved) saveScoreToServer();
+
+    if (gameMode === 'solo') {
+      const maxPossibleScore = totalQuestions * Math.round(BASE_POINTS * pointsMultiplier);
+      const percentage = Math.round((score / (totalQuestions * Math.round(BASE_POINTS * pointsMultiplier))) * 100);
+      const accuracy = Math.round((correctCount / totalQuestions) * 100);
+      let stars = 0;
+      if (percentage >= 90) stars = 5;
+      else if (percentage >= 70) stars = 4;
+      else if (percentage >= 50) stars = 3;
+      else if (percentage >= 30) stars = 2;
+      else if (percentage >= 10) stars = 1;
+      const starEmojis = '⭐'.repeat(stars) + '☆'.repeat(5 - stars);
+      const messages = {
+        5: "🏆 Perfect! You're an EM Spectrum Master!",
+        4: "🌟 Excellent! Very impressive!",
+        3: "👏 Good job! Keep learning!",
+        2: "📚 Nice try! Review the lessons!",
+        1: "💪 Keep practicing! You'll get better!"
+      };
+      const message = messages[stars] || "🎯 Great effort!";
+      if (percentage >= 50) playPassedSound();
+      else playFailedSound();
+
+      gameContainer.innerHTML = `
+        <div class="game-over">
+          <div style="font-size:14px;color:var(--muted);">👤 ${studentName}</div>
+          <div class="big-score">${score}</div>
+          <div style="font-size:14px;color:var(--muted);">total points (Solo Mode)</div>
+          <div class="stars">${starEmojis}</div>
+          <div style="font-size:18px;font-weight:600;margin:4px 0;">${message}</div>
+          <div class="sub-text">${percentage}% of max · ${accuracy}% accuracy</div>
+          <div class="stat-grid">
+            <div class="stat-item"><div class="num" style="color:var(--good);">${score}</div><div class="lbl">Points</div></div>
+            <div class="stat-item"><div class="num" style="color:var(--accent);">${correctCount}/${totalQuestions}</div><div class="lbl">Correct</div></div>
+            <div class="stat-item"><div class="num" style="color:var(--gold);">${streak}</div><div class="lbl">Best Streak</div></div>
+            <div class="stat-item"><div class="num" style="color:${selectedDifficulty === 'easy' ? 'var(--good)' : selectedDifficulty === 'medium' ? 'var(--gold)' : 'var(--bad)'};">${pointsMultiplier}×</div><div class="lbl">Multiplier</div></div>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:8px;">✅ Your score has been saved to the leaderboard!</div>
+          <button class="btn" onclick="startGame()" style="font-size:14px;padding:10px 28px;margin-top:8px;">🔄 Play Again</button>
+          <button class="btn btn-secondary" onclick="showGameStart()" style="margin-left:6px;font-size:14px;padding:10px 20px;">🏠 Change Settings</button>
+        </div>
+      `;
+    } else if (gameMode === 'group') {
+      const sortedTeams = [...teams].sort((a, b) => b.score - a.score);
+      const winner = sortedTeams[0];
+      const passingScore = totalQuestions * Math.round(BASE_POINTS * pointsMultiplier) * 0.5;
+      const allPassed = teams.every(t => t.score >= passingScore);
+      if (allPassed) playPassedSound();
+      else if (winner.score >= passingScore) playPassedSound();
+      else playFailedSound();
+
+      let teamResultsHTML = teams.map((t, i) => {
+        const isWinner = t.id === winner.id;
+        const passed = t.score >= passingScore;
+        return `
+          <div class="stat-item" style="border-color:${isWinner ? 'var(--gold)' : 'var(--line)'};${isWinner ? 'box-shadow:0 0 20px rgba(255,215,0,0.1);' : ''}">
+            <div style="display:flex;align-items:center;gap:6px;justify-content:center;">
+              <span class="team-badge" style="background:${t.color};width:12px;height:12px;border-radius:50%;display:inline-block;"></span>
+              <div class="num" style="color:${isWinner ? 'var(--gold)' : 'var(--text)'};font-size:18px;">${t.score}</div>
+            </div>
+            <div class="lbl">${t.name} ${isWinner ? '🏆' : ''} ${passed ? '✅' : '❌'}</div>
+            <div style="font-size:9px;color:var(--muted);">${t.correct}/${t.totalAnswered} correct</div>
+          </div>
+        `;
+      }).join('');
+
+      gameContainer.innerHTML = `
+        <div class="game-over">
+          <div style="font-size:48px;margin-bottom:4px;">👥</div>
+          <div style="font-size:24px;font-weight:700;color:var(--gold);">${winner.name} Wins! 🏆</div>
+          <div class="sub-text">${winner.score} points · ${winner.correct}/${winner.totalAnswered} correct</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:6px;">
+            ${allPassed ? '🎉 All teams passed!' : teams.filter(t => t.score >= passingScore).length > 0 ? 'Some teams passed!' : 'Keep practicing!'}
+          </div>
+          <div class="stat-grid" style="grid-template-columns:${teams.length <= 3 ? '1fr 1fr' : '1fr 1fr 1fr'};">
+            ${teamResultsHTML}
+          </div>
+          <button class="btn" onclick="startGame()" style="font-size:14px;padding:10px 28px;margin-top:8px;">🔄 Play Again</button>
+          <button class="btn btn-secondary" onclick="showGameStart()" style="margin-left:6px;font-size:14px;padding:10px 20px;">🏠 Change Settings</button>
+        </div>
+      `;
+    } else {
+      const sortedStudents = [...students].sort((a, b) => b.score - a.score);
+      const winner = sortedStudents[0];
+      const passingScore = totalQuestions * Math.round(BASE_POINTS * pointsMultiplier) * 0.5;
+      const allPassed = students.every(s => s.score >= passingScore);
+      if (allPassed) playPassedSound();
+      else if (winner.score >= passingScore) playPassedSound();
+      else playFailedSound();
+
+      let studentResultsHTML = students.map((s, i) => {
+        const isWinner = s.id === winner.id;
+        const passed = s.score >= passingScore;
+        const rank = sortedStudents.findIndex(st => st.id === s.id) + 1;
+        const rankEmoji = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
+        return `
+          <div class="stat-item" style="border-color:${isWinner ? 'var(--gold)' : 'var(--line)'};${isWinner ? 'box-shadow:0 0 20px rgba(255,215,0,0.1);' : ''}">
+            <div class="num" style="color:${isWinner ? 'var(--gold)' : 'var(--text)'};font-size:20px;">${s.score}</div>
+            <div class="lbl">${rankEmoji} ${s.name} ${passed ? '✅' : '❌'}</div>
+            <div style="font-size:9px;color:var(--muted);">${s.correct}/${s.totalAnswered} correct</div>
+          </div>
+        `;
+      }).join('');
+
+      let answerDetailsHTML = students.map(s => `
+        <div style="background:var(--surface);border-radius:8px;padding:8px 10px;margin-top:4px;border:1px solid var(--line);">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;">
+            <div style="font-weight:600;font-size:12px;color:${s.score >= passingScore ? 'var(--good)' : 'var(--bad)'};">
+              <span class="team-badge" style="background:${s.color};width:10px;height:10px;border-radius:50%;display:inline-block;"></span>
+              ${s.name} — ${s.score} pts
+            </div>
+            <div style="font-size:10px;color:var(--muted);">${s.correct}/${s.totalAnswered} correct</div>
+          </div>
+          <div style="font-size:10px;color:var(--muted);margin-top:4px;">
+            ${s.answers && s.answers.length > 0 ? s.answers.map((a, i) => `
+              <span style="color:${a.correct ? 'var(--good)' : 'var(--bad)'};margin-right:6px;">
+                Q${i+1} ${a.correct ? '✅' : '❌'}
+              </span>
+            `).join('') : 'No answers recorded'}
+          </div>
+        </div>
+      `).join('');
+
+      gameContainer.innerHTML = `
+        <div class="game-over" style="max-height:550px;overflow-y:auto;">
+          <div style="font-size:48px;margin-bottom:4px;">👨‍🏫</div>
+          <div style="font-size:24px;font-weight:700;color:var(--gold);">🏆 ${winner.name} Takes 1st Place!</div>
+          <div class="sub-text">${winner.score} points · ${winner.correct}/${winner.totalAnswered} correct</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:6px;">
+            ${allPassed ? '🎉 All students passed!' : '📚 Some students need more practice!'}
+          </div>
+          <div style="font-size:13px;font-weight:600;color:var(--accent);margin-top:12px;text-align:left;">📊 Final Rankings</div>
+          <div class="stat-grid" style="grid-template-columns:${students.length <= 3 ? '1fr 1fr' : '1fr 1fr 1fr'};">
+            ${studentResultsHTML}
+          </div>
+          <div style="font-size:13px;font-weight:600;color:var(--accent);margin-top:12px;text-align:left;">📝 Detailed Answers Per Student</div>
+          ${answerDetailsHTML}
+          <div style="margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+            <button class="btn" onclick="startGame()" style="font-size:14px;padding:10px 28px;">🔄 New Quiz</button>
+            <button class="btn btn-secondary" onclick="showGameStart()" style="font-size:14px;padding:10px 20px;">🏠 Change Settings</button>
+            <button class="btn btn-secondary" onclick="resetStudents()" style="font-size:14px;padding:10px 20px;">🔄 Reset Students</button>
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  // ============================================================
+  // RESET FUNCTIONS
+  // ============================================================
+  function resetStudents() {
+    if (gameActive) {
+      if (!confirm('Resetting will end the current game. Continue?')) return;
+      if (timerInterval) clearInterval(timerInterval);
+      gameActive = false;
+    }
+    students.forEach(s => { s.score = 0; s.correct = 0; s.totalAnswered = 0; s.answers = []; });
+    currentStudentId = 0;
+    showGameStart();
+  }
+
+  // ============================================================
+  // INIT
+  // ============================================================
+  selectDifficulty('easy');
+  setTimeout(() => {
+    selectGameMode('solo');
+    setTimeout(() => loadLeaderboard(0), 300);
+  }, 100);
+
+  genQuizBtn.addEventListener('click', () => {
+    if (gameActive) {
+      if (confirm('Are you sure you want to end the current game?')) {
+        if (timerInterval) clearInterval(timerInterval);
+        startGame();
+      }
+    } else { startGame(); }
+  });
+
+  checkTutorialSeen();
+
+  // Make functions globally accessible
+  window.goToPage = goToPage;
+  window.selectOption = selectOption;
+  window.nextQuestion = nextQuestion;
+  window.startGame = startGame;
+  window.selectDifficulty = selectDifficulty;
+  window.selectGameMode = selectGameMode;
+  window.switchTeam = switchTeam;
+  window.switchStudent = switchStudent;
+  window.resetStudents = resetStudents;
+  window.updateTeamName = updateTeamName;
+  window.addTeam = addTeam;
+  window.removeTeam = removeTeam;
+  window.updateStudentName = updateStudentName;
+  window.addStudent = addStudent;
+  window.removeStudent = removeStudent;
+  window.toggleSound = toggleSound;
+  window.setStudentName = setStudentName;
+  window.updateStudentNameInput = updateStudentNameInput;
+  window.loadLeaderboard = loadLeaderboard;
+  window.showTutorial = showTutorial;
+  window.closeTutorial = closeTutorial;
+  window.toggleAccessibility = toggleAccessibility;
+</script>
+</body>
+</html>
