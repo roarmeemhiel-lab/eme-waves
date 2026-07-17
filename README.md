@@ -29,7 +29,7 @@ EM Spectrum Explorer is an interactive web application for Grade 9 Science stude
 
 ## 👨‍🏫 Author
 
-Your Name
+Camiele B. Roa
 
 ## 📝 License
 
